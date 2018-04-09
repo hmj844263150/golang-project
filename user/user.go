@@ -12,7 +12,7 @@ import (
 )
 
 const bodyTmpl = "Dear %s:\r\n\r\n\tThe account information you have just modify is as follows:\r\n\tAccount: %s\r\n\tPassword: %s\r\n\r\n\t(This message is send by system, do not reply)\r\n\r\nEspressif Systems · Production System\r\n"
-const mailTmpl = "To: <%s>\r\nFrom: hongmingjie <hongmingjie@espressif.com>\r\nSubject: %s\r\nUser-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:45.0) Gecko/20100101 Thunderbird/45.2.0\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=utf-8; format=flowed\r\nContent-Transfer-Encoding: 7bit\r\n\r\n%s"
+const mailTmpl = "To: <%s>\r\nFrom: Factory System <factory@espressif.com>\r\nSubject: %s\r\nUser-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:45.0) Gecko/20100101 Thunderbird/45.2.0\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=utf-8; format=flowed\r\nContent-Transfer-Encoding: 7bit\r\n\r\n%s"
 
 func User(req *rpc.Request, resp *rpc.Response) {
 	switch req.Method {
@@ -43,7 +43,10 @@ func userPost(req *rpc.Request, resp *rpc.Response) {
 	}
 	resp.Body["user"] = user
 	body := fmt.Sprintf(bodyTmpl, user.Name, user.Account, originPassword)
-	err = SendToMail(user.Email, "factory account and password(auto send noreplay)", body)
+	err = SendToMail(user.Email, "factory account and password", body)
+	if err != nil {
+		fmt.Println("send mail fail", err)
+	}
 }
 
 func Login(req *rpc.Request, resp *rpc.Response) {
@@ -96,27 +99,45 @@ func userModifyPost(req *rpc.Request, resp *rpc.Response) {
 		resp.Err = err
 		return
 	}
-	originPassword := user.Password
-	user.Password = fmt.Sprintf("%x", md5.Sum([]byte(user.Password)))
+	origin := dal.FindUserByAccount(req.Ctx, user.Account)
+	if origin == nil {
+		resp.Err = rpc.NotFound
+		return
+	}
+
+	password := user.Password
+	if user.Password != "" {
+		user.Password = fmt.Sprintf("%x", md5.Sum([]byte(user.Password)))
+	} else {
+		user.Password = origin.Password
+	}
+
 	err = user.Update()
 	if err != nil {
 		resp.Err = err
 		return
 	}
+	if password != "" {
+		body := fmt.Sprintf(bodyTmpl, user.Name, user.Account, password)
+		err = SendToMail(user.Email, "factory account and password", body)
+		if err != nil {
+			fmt.Println("send mail fail", err)
+		}
+	}
+
 	user.Password = ""
 	resp.Body["user"] = user
-	body := fmt.Sprintf(bodyTmpl, user.Name, user.Account, originPassword)
-	err = SendToMail(user.Email, "factory account and password(auto send noreplay)", body)
 }
 
 func SendToMail(to, subject, body string) error {
+	fmt.Println(to, subject, body)
 	c, err := smtp.Dial("localhost:25")
 	if err != nil {
 		log.Println(err)
 		return err
 	}
 	defer c.Close()
-	c.Mail("noreply@factory.espressif.cn")
+	c.Mail("factory@espressif.ccom")
 	c.Rcpt(to)
 	wc, err := c.Data()
 	if err != nil {

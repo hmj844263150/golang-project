@@ -22,7 +22,7 @@
     <div class="form-group">
       <label for="password" class="col-sm-3 control-label">New Password*</label>
       <div class="col-sm-9">
-        <input ng-model="user.password" type="text" class="form-control input-lg" name="password" placeholder="password" required>
+        <input ng-model="user.password" type="text" class="form-control input-lg" name="password" placeholder="if not want to change, just keep empty">
       </div>
     </div>
     <div class="form-group">
@@ -34,13 +34,15 @@
     <div class="form-group">
       <label for="group" class="col-sm-3 control-label">Group</label>
       <div class="col-sm-9">
-        <input ng-model="user.group_id" type="text" class="form-control input-lg" name="group" placeholder="group">
+        <input ng-model="user.group_id" type="number" class="form-control input-lg" name="group" placeholder="group">
       </div>
     </div>
     <div class="form-group">
-      <label for="email" class="col-sm-3 control-label">Email</label>
+      <label for="email" class="col-sm-3 control-label">Email*</label>
       <div class="col-sm-9">
-        <input ng-model="user.email" type="text" class="form-control input-lg" name="email" placeholder="email">
+        <input ng-model="user.email" type="email" class="form-control input-lg" name="email" placeholder="email" required>
+        <span style="color:red" ng-show="user_create.email.$dirty && user_create.email.$invalid">
+        <span ng-show="user_create.email.$error.email">email format illegal</span>
         </span>
       </div>
     </div>

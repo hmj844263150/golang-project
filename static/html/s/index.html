@@ -317,6 +317,13 @@ iotControllers.controller('userCreate',
             $scope.warning_save = 'Name must not empty';
             return;
         }
+        if ($scope.user.group_id == undefined) {
+            $scope.user.group_id = 0
+        }
+        if ($scope.user.email == undefined || $scope.user.email == "") {
+            $scope.warning_save = 'email format illegal';
+            return;
+        }
         $http.post('/user/', {user: $scope.user}, {headers: {'token': $cookies.get('Token')}}).success(function(data) {
             if(data.status != 200) {
                 alert(data.message);
@@ -365,12 +372,15 @@ iotControllers.controller('userModify',
             $scope.warning_save = 'please choose factory_sid first';
             return;
         }
-        if ($scope.user.password == undefined || $scope.user.password == "") {
-            $scope.warning_save = 'Password must not empty';
-            return;
-        }
         if ($scope.user.name == undefined || $scope.user.name == "") {
             $scope.warning_save = 'Name must not empty';
+            return;
+        }
+        if ($scope.user.group_id == undefined || $scope.user.group_id == "") {
+            $scope.user.group_id = 0
+        }
+        if ($scope.user.email == undefined || $scope.user.email == "") {
+            $scope.warning_save = 'email format illegal';
             return;
         }
         $http.post('/user/modify', {user: $scope.user}, {headers: {'token': $cookies.get('Token')}}).success(function(data) {
@@ -447,6 +457,40 @@ iotControllers.controller('batchCreate',
         return;
       });
     };
+}]);
+
+iotControllers.controller('batchStats',
+    ['$rootScope', '$scope', '$route', '$routeParams', '$http', '$cookies', '$location', '$anchorScroll', '$filter', '$localStorage', '$timeout',
+    function ($rootScope, $scope, $route, $routeParams, $http, $cookies, $location, $anchorScroll, $filter, $localStorage, $timeout) {
+
+    $scope.is_render_batch = false;
+    $scope.factory_sid = "-- * --";
+    $scope.batch_sid = "-- * --";
+    $scope.b = {cnt:"loding", success:"loding", rejected:"loding"}
+    $scope.print_pass = 0
+    if($routeParams.batch_sid != undefined) {
+        $scope.batch_sid = $routeParams.batch_sid;
+    }
+    if($routeParams.factory_sid != undefined) {
+        $scope.factory_sid = $routeParams.factory_sid;
+    }
+    var render_batch = function(){
+        $scope.is_render_batch = true;
+        $http.get('/batch/stats?batch_detail='+$scope.batch_sid, {headers: {'token': $cookies.get('Token')}}).success(function(dataO) {
+            var batch = dataO.batch;
+            var sum = batch.success + batch.rejected;
+            //$scope.print_pass = dataO.print_pass;
+            batch.success_pct = parseInt(batch.success*10000 / sum) / 100;
+            //batch.right_first_time_pct = parseInt(batch.right_first_time*10000 / batch.cnt) / 100;
+            batch.failed_pct = parseInt(batch.failed*10000 / sum) / 100;
+            batch.rejected_pct = parseInt(batch.rejected*10000 / sum) / 100;
+            $scope.b = batch;
+        });
+    }
+    $scope.update_batch = function(){
+        render_batch();
+    }
+    render_batch();
 }]);
 
 iotControllers.controller('testdata',
@@ -546,39 +590,6 @@ iotControllers.controller('testdata',
     };
 }]);
 
-iotControllers.controller('batchStats',
-    ['$rootScope', '$scope', '$route', '$routeParams', '$http', '$cookies', '$location', '$anchorScroll', '$filter', '$localStorage', '$timeout',
-    function ($rootScope, $scope, $route, $routeParams, $http, $cookies, $location, $anchorScroll, $filter, $localStorage, $timeout) {
-
-    $scope.is_render_batch = false;
-    $scope.factory_sid = "-- * --";
-    $scope.batch_sid = "-- * --";
-    $scope.b = {cnt:"loding", success:"loding", rejected:"loding"}
-    $scope.print_pass = 0
-    if($routeParams.batch_sid != undefined) {
-        $scope.batch_sid = $routeParams.batch_sid;
-    }
-    if($routeParams.factory_sid != undefined) {
-        $scope.factory_sid = $routeParams.factory_sid;
-    }
-    var render_batch = function(){
-        $scope.is_render_batch = true;
-        $http.get('/batch/stats?batch_detail='+$scope.batch_sid, {headers: {'token': $cookies.get('Token')}}).success(function(dataO) {
-            var batch = dataO.batch;
-            var sum = batch.success + batch.rejected;
-            //$scope.print_pass = dataO.print_pass;
-            batch.success_pct = parseInt(batch.success*10000 / sum) / 100;
-            //batch.right_first_time_pct = parseInt(batch.right_first_time*10000 / batch.cnt) / 100;
-            batch.failed_pct = parseInt(batch.failed*10000 / sum) / 100;
-            batch.rejected_pct = parseInt(batch.rejected*10000 / sum) / 100;
-            $scope.b = batch;
-        });
-    }
-    $scope.update_batch = function(){
-        render_batch();
-    }
-    render_batch();
-}]);
 
 iotControllers.controller('stats',
     ['$rootScope', '$scope', '$route', '$routeParams', '$http', '$cookies', '$location', '$anchorScroll', '$filter', '$localStorage', '$timeout',

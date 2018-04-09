@@ -105,5 +105,3 @@ echo '{"path":"/testdata/stats","get": {"by": "datetime_batch", "batch_sid": "__
 protoc --run_out=. *.proto ; sed -i 's:espressif.com/cloud/poster/db:espressif.com/chip/factory/db:g' *.go ; sed -i 's:var _ Doer:var _ db.Doer:g' *.go
 sudo apt-get install gcc-mingw-w64
 env CGO_ENABLED=1 GOOS=windows GOARCH=386 CC="i686-w64-mingw32-gcc" go build -o ha.exe apps/ha/ha.go
-
-

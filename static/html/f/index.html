@@ -89,18 +89,34 @@ var iotApp = angular.module('iotApp', [
     'ngStorage',
     'iotControllers',
 ]);
+
 iotApp.config(['$routeProvider',
     function($routeProvider) {
         $routeProvider.
             when('/', {
                 title: 'home',
-                templateUrl: './batch.html',
-                controller: 'batch'
+                templateUrl: './factory.html',
+                controller: 'factory'
             }).
             when('/login', {
                 title: 'Login',
                 templateUrl: './login.html',
                 controller: 'login'
+            }).
+            when('/user', {
+                title: 'User',
+                templateUrl: './user.html',
+                controller: 'user'
+            }).
+            when('/user/create', {
+                title: 'User',
+                templateUrl: './user-create.html',
+                controller: 'userCreate'
+            }).
+            when('/user/modify',{
+                title: 'User',
+                templateUrl: './user-modify.html',
+                controller: 'userModify'
             }).
             when('/factory', {
                 title: 'Factory',
@@ -181,20 +197,20 @@ iotControllers.controller('auth',
     }
 }]);
 
-iotControllers.controller('login', 
+iotControllers.controller('login',
     ['$rootScope', '$scope', '$route', '$routeParams', '$http', '$cookies', '$location', '$anchorScroll', '$filter', '$localStorage',
     function ($rootScope, $scope, $route, $routeParams, $http, $cookies, $location, $anchorScroll, $filter, $localStorage) {
 
     $scope.login = function() {
-        $http.get('/batchs', {headers: {'token': $scope.token}}).success(function(data) {
+        $http.get('/user/login?account='+$scope.account+'&password='+$scope.password, {headers: {'token': 'temp'}}).success(function(data) {
             if(data.status != 200) {
                 alert("login failed");
                 return
             }
             now = new Date();
             expires = new Date(now.getFullYear(), now.getMonth(), now.getDate()+30);
-            $cookies.put('Token', $scope.token, {'expires': expires});
-            window.location.href = location.origin + '/f/#/batch';
+            $cookies.put('Token', data.token, {'path': '/', 'expires': expires});
+            window.location.href = location.origin + '/f/#/factory';
             window.location.reload();
             return
         });
@@ -224,6 +240,27 @@ iotControllers.controller('factoryCreate',
         return;
       });
     };
+}]);
+
+iotControllers.controller('user', 
+    ['$rootScope', '$scope', '$route', '$routeParams', '$http', '$cookies', '$location', '$anchorScroll', '$filter', '$localStorage',
+    function ($rootScope, $scope, $route, $routeParams, $http, $cookies, $location, $anchorScroll, $filter, $localStorage) {
+
+    $http.get('/users', {headers: {'token': $cookies.get('Token')}}).success(function(data) {
+        check(data);
+        $scope.users = data.users;
+    });
+
+}]);
+
+iotControllers.controller('userCreate', 
+    ['$rootScope', '$scope', '$route', '$routeParams', '$http', '$cookies', '$location', '$anchorScroll', '$filter', '$localStorage',
+    function ($rootScope, $scope, $route, $routeParams, $http, $cookies, $location, $anchorScroll, $filter, $localStorage) {
+}]);
+
+iotControllers.controller('userModify', 
+    ['$rootScope', '$scope', '$route', '$routeParams', '$http', '$cookies', '$location', '$anchorScroll', '$filter', '$localStorage',
+    function ($rootScope, $scope, $route, $routeParams, $http, $cookies, $location, $anchorScroll, $filter, $localStorage) {
 }]);
 
 iotControllers.controller('batch',
