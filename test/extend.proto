@@ -1,0 +1,37 @@
+syntax = "proto3";
+package dal;
+
+import public "descriptor.proto";
+
+message Timestamp {
+    int64 seconds = 1;
+    int32 nanos = 2;
+}
+
+message Bytes {
+    bytes args = 1;
+}
+
+extend google.protobuf.FileOptions {
+    int32 fid = 61001;
+    string namespace = 61002;
+}
+
+extend google.protobuf.MessageOptions {
+    int32 tid = 62001;
+    string table = 62002;
+    string smooth = 62003;
+    string valid = 62004;
+}
+
+extend google.protobuf.FieldOptions {
+    int32 maxLength = 65001;
+    bool omit = 65002;
+}
+
+extend google.protobuf.MethodOptions {
+    int32 mid = 66001;
+    string args = 66002;
+    string returns = 66003;
+    string sql = 66004;
+}

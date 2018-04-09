@@ -1,0 +1,64 @@
+syntax = "proto3";
+package dal;
+
+import "extend.proto";
+
+option (fid) = 1;
+option (namespace) = "Batch";
+
+message Batch {
+    option (tid)   = 1;
+    option (table) = "batch";
+    option (valid) = "valid";
+    int32 Id = 1;
+    Timestamp Created = 2;
+    Timestamp Updated = 3;
+    bool   Visibly = 4;
+    string Sid = 5 [(maxLength)=64];
+    string FactorySid = 6 [(maxLength)=64];
+    string Name = 7 [(maxLength)=64];
+    string Desc = 8 [(maxLength)=128];
+    int32  Cnt  = 9;
+    int32  Remain = 10;
+    string EspMacFrom = 11 [(maxLength)=64];
+    string EspMacTo = 12 [(maxLength)=64];
+    string CusMacFrom = 13 [(maxLength)=64];
+    string CusMacTo = 14 [(maxLength)=64];
+    int32  EspMacNumFrom = 15;
+    int32  EspMacNumTo = 16;
+    int32  CusMacNumFrom = 17;
+    int32  CusMacNumTo = 18;
+    bool   IsCus = 19;
+    int32  Success = 20;
+    int32  RightFirstTime = 21;
+    int32  Failed = 22;
+    int32  Rejected = 23;
+    Timestamp Statsed = 24;
+}
+
+message Batchs {
+    repeated Batch List = 1;
+}
+
+service BatchDal {
+    rpc ListBatchAll(Bytes) returns (Batchs) {
+        option (mid) = 1;
+        option (args) = "offset int, rowCount int";
+        option (sql) = "select * from batch where visibly = 1 order by id desc limit ?, ?";
+    }
+    rpc FindBatchBySid(Bytes) returns (Batch) {
+        option (mid) = 2;
+        option (args) = "sid string";
+        option (sql) = "select * from batch where visibly = 1 and sid = ? limit 0, 1";
+    }
+    rpc FindBatchBySidEspMacNumRange(Bytes) returns (Batch) {
+        option (mid) = 3;
+        option (args) = "sid string, macNumFrom int, macNumTo int";
+        option (sql) = "select * from batch where visibly = 1 and sid = ? and cus_mac_num_from >= ? and ? <= cus_mac_num_to limit 0, 1";
+    }
+    rpc ListBatchByFactorySid(Bytes) returns (Batchs) {
+        option (mid) = 4;
+        option (args) = "factorySid string, offset int, rowCount int";
+        option (sql) = "select * from batch where visibly = 1 and factory_sid = ? order by id desc limit ?, ?";
+    }
+}
