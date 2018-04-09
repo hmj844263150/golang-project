@@ -1,0 +1,17 @@
+<div id="section">
+  <h1 class="page-header">Factory
+    <a href="#/factory/create/">
+      <button type="button" class="btn btn-default btn-sm">
+        <img class="" alt="create factory" src="https://iot.espressif.cn/static/img/flaticon/24115.svg" style="width:10px;height:10px;"> Create
+      </button>
+    </a>
+  </h1>
+  <table class="table">
+    <thead><tr><th>Id</th><th>Created</th><th>Name</th><th>Sid</th><th>Token</th><th>Location</th><th>IsStaff</th></tr></thead>
+    <tbody> 
+      <tr ng-repeat="f in factorys">
+        <th scope="row">{{f.id}}</th><td>{{f.created}}</td><td>{{f.name}}</td><td>{{f.sid}}</td><td>{{f.token}}</td><td>{{f.location}}</td><td>{{f.is_staff}}</td>
+      </tr>
+    </tbody>
+  </table>
+<div>

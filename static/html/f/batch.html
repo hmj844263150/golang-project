@@ -1,0 +1,18 @@
+<div id="section">
+  <h1 class="page-header">Batch
+    <a href="#/batch/create/">
+      <button type="button" class="btn btn-default btn-sm">
+        <img class="" alt="create batch" src="https://iot.espressif.cn/static/img/flaticon/24115.svg" style="width:10px;height:10px;"> Create
+      </button>
+    </a>
+    <span class="small muted" style="font-size: 40%">{{query}}</span>
+  </h1>
+  <table class="table">
+    <thead><tr><th>Id</th><th>Created</th><th>Name</th><th>Sid</th><th>FactorySid</th><th>Cnt</th><th>Search</th><th>EspMacFrom / EspMacTo</th><th>CusMacFrom / CusMacTo</th><th>Description</th></tr></thead>
+    <tbody> 
+      <tr ng-repeat="b in batchs">
+        <th scope="row">{{b.id}}</th><td>{{b.created}}</td><td>{{b.name}}</td><td><a href="#/testdata?factory_sid={{b.factory_sid}}&batch_sid={{b.sid}}">{{b.sid}}</a></td><td>{{b.factory_sid}}</td><td>{{b.cnt}}</td><td><a href="#/batch/stats?factory_sid={{b.factory_sid}}&batch_sid={{b.sid}}">detail</a></td><td>{{b.espMac_from}} / {{b.esp_mac_to}}</td><td>{{b.cus_mac_from}} / {{b.cus_mac_to}}</td><td>{{b.desc}}</td>
+      </tr>
+    </tbody>
+  </table>
+<div>

@@ -1,0 +1,166 @@
+syntax = "proto3";
+package dal;
+
+import "extend.proto";
+
+option (fid) = 1;
+option (namespace) = "Testdata";
+
+message Testdata {
+    option (tid)   = 1;
+    option (table) = "testdata";
+    option (valid) = "valid";
+    int32 Id = 1;
+    Timestamp Created = 2;
+    Timestamp Updated = 3;
+    bool Visibly = 4;
+    int32  ModuleId = 5;
+    string DeviceType = 6 [(maxLength)=64];
+    string FwVer = 7 [(maxLength)=64];
+    string EspMac = 8 [(maxLength)=64];
+    string CusMac = 9 [(maxLength)=64];
+    string FlashId = 10 [(maxLength)=64];
+    string TestResult = 11 [(maxLength)=64];
+    string TestMsg = 12 [(maxLength)=64];
+    string FactorySid = 13 [(maxLength)=64];
+    string BatchSid = 14 [(maxLength)=64];
+    string Efuse = 15 [(maxLength)=64];
+    int32  QueryTimes = 16;
+    int32  PrintTimes = 17;
+    int32  BatchIndex = 18;
+    bool   Latest = 19;
+    bool   IsCommit = 20;
+}
+
+message Testdatas {
+    repeated Testdata List = 1;
+}
+
+service TestdataDal {
+    rpc FindTestdataByEspMac(Bytes) returns (Testdata) {
+        option (mid) = 1;
+        option (args) = "espMac string";
+        option (sql) = "select * from testdata where visibly = 1 and esp_mac = ? order by id desc limit 0, 1";
+    }
+    rpc ListTestdataByEspMac(Bytes) returns (Testdatas) {
+        option (mid) = 2;
+        option (args) = "espMac string, offset int, rowCount int";
+        option (sql) = "select * from testdata where visibly = 1 and esp_mac = ? order by id desc limit ?, ?";
+    }
+    rpc CountTestdataByEspMac(Bytes) returns (Bytes) {
+        option (mid) = 3;
+        option (args) = "espMac string, testResult string";
+        option (sql) = "select count(*) from testdata where visibly = 1 and esp_mac = ? and test_result = ?";
+    }
+    rpc CountTestdataByBatch(Bytes) returns (Bytes) {
+        option (mid) = 4;
+        option (args) = "batchSid string, testResult string";
+        option (sql) = "select count(*) from testdata where visibly = 1 and batch_sid = ? and test_result = ?";
+    }
+    rpc CountTestdataByDatetime(Bytes) returns (Bytes) {
+        option (mid) = 5;
+        option (args) = "start time.Time, end time.Time, testResult string";
+        option (sql) = "select count(*) from testdata where visibly = 1 and created >= ? and created < ? and test_result = ?";
+    }
+    rpc CountTestdataByDatetimeBatch(Bytes) returns (Bytes) {
+        option (mid) = 6;
+        option (args) = "start time.Time, end time.Time, batchSid string, testResult string";
+        option (sql) = "select count(*) from testdata where visibly = 1 and created >= ? and created < ? and batch_sid = ? and test_result = ?";
+    }
+    rpc ListTestdataByBatch(Bytes) returns (Testdatas) {
+        option (mid) = 7;
+        option (args) = "batchSid string, offset int, rowCount int";
+        option (sql) = "select * from testdata where visibly = 1 and batch_sid = ? order by id desc limit ?, ?";
+    }
+    rpc ListTestdataAll(Bytes) returns (Testdatas) {
+        option (mid) = 8;
+        option (args) = "offset int, rowCount int";
+        option (sql) = "select * from testdata where visibly = 1 order by id desc limit ?, ?";
+    }
+    rpc ListTestdataByFactory(Bytes) returns (Testdatas) {
+        option (mid) = 9;
+        option (args) = "factorySid string, offset int, rowCount int";
+        option (sql) = "select * from testdata where visibly = 1 and factory_sid = ? order by id desc limit ?, ?";
+    }
+    rpc CountTestdataByBatchSuccess(Bytes) returns (Bytes) {
+        option (mid) = 18;
+        option (args) = "batchSid string";
+        option (sql) = "select count(distinct(esp_mac)) from testdata where visibly = 1 and batch_sid = ? and test_result = 'success' and latest = 1";
+    }
+    rpc CountTestdataByBatchRightFirstTime(Bytes) returns (Bytes) {
+        option (mid) = 10;
+        option (args) = "batchSid1 string, batchSid2 string";
+        option (sql) = "select count(distinct(esp_mac)) from testdata where visibly = 1 and batch_sid = ? and test_result = 'success' and not exists (select * from testdata as testdata2 where visibly = 1 and batch_sid = ? and test_result != 'success' and testdata.esp_mac = testdata2.esp_mac)";
+    }
+    rpc CountTestdataByBatchFailed(Bytes) returns (Bytes) {
+        option (mid) = 11;
+        option (args) = "batchSid string";
+        option (sql) = "select count(distinct(esp_mac)) from testdata where visibly = 1 and batch_sid = ? and test_result != 'success'";
+    }
+    rpc CountTestdataByBatchRejected(Bytes) returns (Bytes) {
+        option (mid) = 12;
+        option (args) = "batchSid string";
+        option (sql) = "select count(distinct(esp_mac)) from testdata where visibly = 1 and batch_sid = ? and test_result != 'success' and latest = 1";
+    }
+    rpc CountTestdataByBatchStartEnd(Bytes) returns (Bytes) {
+        option (mid) = 17;
+        option (args) = "batchSid string, start time.Time, end time.Time";
+        option (sql) = "select count(distinct(esp_mac)) from testdata where visibly = 1 and batch_sid = ? and created >= ? and created < ?";
+    }
+    rpc CountTestdataByBatchSuccessStartEnd(Bytes) returns (Bytes) {
+        option (mid) = 16;
+        option (args) = "batchSid string, start time.Time, end time.Time";
+        option (sql) = "select count(distinct(esp_mac)) from testdata where visibly = 1 and batch_sid = ? and test_result = 'success' and latest = 1 and created >= ? and created < ?";
+    }
+    rpc CountTestdataByBatchRightFirstTimeStartEnd(Bytes) returns (Bytes) {
+        option (mid) = 13;
+        option (args) = "batchSid1 string, start1 time.Time, end1 time.Time, batchSid2 string, start2 time.Time, end2 time.Time";
+        option (sql) = "select count(distinct(esp_mac)) from testdata where visibly = 1 and batch_sid = ? and test_result = 'success' and created >= ? and created < ? and not exists (select * from testdata as testdata2 where visibly = 1 and batch_sid = ? and test_result != 'success' and created >= ? and created < ? and testdata.esp_mac = testdata2.esp_mac)";
+    }
+    rpc CountTestdataByBatchFailedStartEnd(Bytes) returns (Bytes) {
+        option (mid) = 14;
+        option (args) = "batchSid string, start time.Time, end time.Time";
+        option (sql) = "select count(distinct(esp_mac)) from testdata where visibly = 1 and batch_sid = ? and test_result != 'success' and created >= ? and created < ?";
+    }
+    rpc CountTestdataByBatchRejectedStartEnd(Bytes) returns (Bytes) {
+        option (mid) = 15;
+        option (args) = "batchSid string, start time.Time, end time.Time";
+        option (sql) = "select count(distinct(esp_mac)) from testdata where visibly = 1 and batch_sid = ? and test_result != 'success' and latest = 1 and created >= ? and created < ?";
+    }
+    
+    rpc FindTestdataByCusMac(Bytes) returns (Testdata) {
+        option (mid) = 19;
+        option (args) = "cusMac string";
+        option (sql) = "select * from testdata where visibly = 1 and cus_mac = ? order by id desc limit 0, 1";
+    }
+    rpc FindTestdataByBatchSidEspMac(Bytes) returns (Testdata) {
+        option (mid) = 20;
+        option (args) = "batchSid string, espMac string";
+        option (sql) = "select * from testdata where visibly = 1 and batch_sid = ? and esp_mac = ? order by id desc limit 0, 1";
+    }
+    rpc FindTestdataByBatchSidCusMac(Bytes) returns (Testdata) {
+        option (mid) = 21;
+        option (args) = "batchSid string, cusMac string";
+        option (sql) = "select * from testdata where visibly = 1 and batch_sid = ? and cus_mac = ? order by id desc limit 0, 1";
+    }
+    rpc FindTestdataByEspMacSuccess(Bytes) returns (Testdata) {
+        option (mid) = 22;
+        option (args) = "espMac string";
+        option (sql) = "select * from testdata where visibly = 1 and esp_mac = ? and test_result = 'success' order by id desc limit 0, 1";
+    }
+    rpc FindTestdataByCusMacSuccess(Bytes) returns (Testdata) {
+        option (mid) = 23;
+        option (args) = "cusMac string";
+        option (sql) = "select * from testdata where visibly = 1 and cus_mac = ? and test_result = 'success' order by id desc limit 0, 1";
+    }
+    rpc CountTestdataByBatchPrintPass(Bytes) returns (Bytes) {
+        option (mid) = 24;
+        option (args) = "batchSid string";
+        option (sql) = "select count(distinct(esp_mac)) from testdata where visibly=1 and batch_sid = ? and test_result='success' and latest=1 and print_times=1";
+    }
+    rpc ListTestdataByFactoryEspMac(Bytes) returns (Testdatas) {
+        option (mid) = 25;
+        option (args) = "factorySid string, espMac string, offset int, rowCount int";
+        option (sql) = "select * from testdata where visibly = 1 and factory_sid = ? and esp_mac = ? order by id desc limit ?, ?";
+    }
+}

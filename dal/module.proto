@@ -1,0 +1,25 @@
+syntax = "proto3";
+package dal;
+
+import "extend.proto";
+
+option (fid) = 1;
+option (namespace) = "Module";
+
+message Module {
+    option (tid)   = 1;
+    option (table) = "module";
+    option (valid) = "valid";
+    int32 Id = 1;
+    Timestamp Created = 2;
+    Timestamp Updated = 3;
+    bool Visibly = 4;
+    string EspMac = 8 [(maxLength)=64];
+}
+
+message Modules {
+    repeated Module List = 1;
+}
+
+service ModuleDal {
+}

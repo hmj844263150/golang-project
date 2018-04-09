@@ -1,0 +1,17 @@
+<div id="section">
+  <h1 class="page-header">User
+<!--     <a href="#/user/create/">
+      <button type="button" class="btn btn-default btn-sm">
+        <img class="" alt="create user" src="https://iot.espressif.cn/static/img/flaticon/24115.svg" style="width:10px;height:10px;"> Create
+      </button>
+    </a> -->
+  </h1>
+  <table class="table">
+    <thead><tr><th>Id</th><th>Created</th><th>Account</th><th>FactorySid</th><th>Name</th><th>Group</th></tr></thead>
+    <tbody> 
+      <tr ng-repeat="u in users">
+        <th scope="row">{{u.id}}</th><td>{{u.created}}</td><td>{{u.account}}</td><td>{{u.factory_sid}}</td><td>{{u.name}}</td><td>{{u.group}}</td>
+      </tr>
+    </tbody>
+  </table>
+<div>

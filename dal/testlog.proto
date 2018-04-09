@@ -1,0 +1,39 @@
+syntax = "proto3";
+package dal;
+
+import "extend.proto";
+
+option (fid) = 1;
+option (namespace) = "Testlog";
+
+message Testlog {
+    option (tid)   = 1;
+    option (table) = "testlog";
+    option (valid) = "valid";
+    int32 Id = 1;
+    Timestamp Created = 2;
+    Timestamp Updated = 3;
+    bool Visibly = 4;
+    int32  ModuleId = 5;
+    string DeviceType = 6 [(maxLength)=64];
+    string FwVer = 7 [(maxLength)=64];
+    string EspMac = 8 [(maxLength)=64];
+    string CusMac = 9 [(maxLength)=64];
+    string FlashId = 10 [(maxLength)=64];
+    string TestResult = 11 [(maxLength)=64];
+    string TestMsg = 12 [(maxLength)=64];
+    string FactorySid = 13 [(maxLength)=64];
+    string BatchSid = 14 [(maxLength)=64];
+    string Efuse = 15 [(maxLength)=64];
+    int32  QueryTimes = 16;
+    int32  PrintTimes = 17;
+    int32  BatchIndex = 18;
+    bool   Latest = 19;
+}
+
+message Testlogs {
+    repeated Testlog List = 1;
+}
+
+service TestlogDal {
+}

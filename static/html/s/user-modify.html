@@ -1,0 +1,60 @@
+<h1 class="page-header">Modify · User </h1>
+<div class="profile-form col-sm-8">
+  <div ng-if="warning" class="alert alert-warning">{{warning}}</div>
+  <form class="form-horizontal input-lg" role="form" name="user_create">
+    <div class="form-group">
+      <label for="factory" class="col-sm-3 control-label">Factory</label>
+      <div class="col-sm-9">
+        <select id="factory" ng-change="" ng-model="user.factory_sid">
+          <option value="-- * --" selected>-- * --</option>
+          <option ng-repeat="factory in factorys" value="{{factory.sid}}">{{factory.sid}}</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="account" class="col-sm-3 control-label">Account*</label>
+      <div class="col-sm-9">
+        <input ng-model="user.account" type="text" class="form-control input-lg" name="account" placeholder="account" ng-disabled="true" required>
+        </span>
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="password" class="col-sm-3 control-label">New Password*</label>
+      <div class="col-sm-9">
+        <input ng-model="user.password" type="text" class="form-control input-lg" name="password" placeholder="password" required>
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="name" class="col-sm-3 control-label">Name*</label>
+      <div class="col-sm-9">
+        <input ng-model="user.name" type="text" class="form-control input-lg" name="name" placeholder="name" required>
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="group" class="col-sm-3 control-label">Group</label>
+      <div class="col-sm-9">
+        <input ng-model="user.group_id" type="text" class="form-control input-lg" name="group" placeholder="group">
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="email" class="col-sm-3 control-label">Email</label>
+      <div class="col-sm-9">
+        <input ng-model="user.email" type="text" class="form-control input-lg" name="email" placeholder="email">
+        </span>
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="description" class="col-sm-3 control-label">Description</label>
+      <div class="col-sm-9">
+        <input ng-model="user.description" type="text" class="form-control input-lg" name="description" placeholder="description">
+      </div>
+    </div>
+    <div class="form-group">
+      <div class="col-sm-offset-3 col-sm-9">
+        <button ng-click="modify_user()" type="submit" class="profile-button btn btn-lg btn-default" ><span class="wait-and-ok"></span> Change </button>
+        <label>{{warning_save}}</label>
+      </div>  
+    </div>
+  </form>
+</div>

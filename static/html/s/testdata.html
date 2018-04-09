@@ -1,0 +1,68 @@
+<div id="section">
+  <h1 class="page-header">Testdata
+    <button class="btn btn-default btn-xs" ng-click="export()">export</button>
+    <div ng-if="export_mode" class="pull-right">
+      <form class="form-inline" role="form">
+        <div>
+          <span class="font-size-small margin-right-3">Export To </span>
+          <div class="form-group margin-right-5">
+            <input id="export_email" ng-model="export_email" class="form-control input-sm" placeholder="email@espressif.com">
+            <button class="btn btn-default btn-sm" ng-click="export_to_email(export_email)">Send</button>
+          </div>
+        </div>
+      </form>
+    </div>
+    <span class="small muted" style="font-size: 40%">{{query}}</span>
+    <div class="pull-right">
+      <form class="form-inline pull-right" role="form">
+        <span class="font-size-small margin-right-3">esp_mac</span>
+        <div class="form-group margin-right-5">
+          <label class="sr-only" for="search">search</label>
+          <input id="esp_mac" ng-change="search()" ng-model="esp_mac" type="search" class="form-control input-sm" placeholder="esp_mac">
+        </div>
+        <span class="font-size-small margin-right-3">factory</span>
+        <div class="form-group margin-right-5">
+          <select id="factory" ng-change="search()" ng-model="factory_sid" class="form-control input-sm">
+            <option value="-- * --" selected>-- * --</option>
+            <option ng-repeat="factory in factorys" value="{{factory.sid}}">{{factory.sid}}</option>
+          </select>
+        </div>
+        <span class="font-size-small margin-right-3">batch</span>
+        <div class="form-group margin-right-5">
+          <select id="batch" ng-change="search()" ng-model="batch_sid" class="form-control input-sm">
+            <option value="-- * --" selected>-- * --</option>
+            <option ng-repeat="batch in batchs" value="{{batch.sid}}">{{batch.sid}}</option>
+          </select>
+        </div>
+        <span class="font-size-small margin-right-3">count</span>
+        <div class="form-group margin-right-5">
+          <select id="count" ng-change="search()" ng-model="row_count" class="form-control input-sm">
+            <option value="100">100</option>
+            <option value="500">500</option>
+            <option value="1000">1000</option>
+          </select>
+        </div>
+      </form>
+    </div>
+  </h1>
+  <div ng-if="export_mode" class="page-header"></div>
+  <table id="table-export" class="table">
+    <thead class="hide">
+      <tr><th>Id</th><th>Created</th><th>Updated</th><th>Visibly</th><th>ModuleId</th><th>DeviceType</th><th>FwVer</th><th>EspMac</th><th>CusMac</th><th>FlashId</th><th>TestResult</th><th>TestMsg</th><th>FactorySid</th><th>BatchSid</th><th>Efuse</th><th>QueryTimes</th><th>PrintTimes</th><th>BatchIndex</th><th>Latest</th></tr>
+    </thead>
+    <tbody class="hide">
+      <tr ng-repeat="t in testdatas"><td>{{t.id}}</td><td>{{t.created}}</td><td>{{t.updated}}</td><td>{{t.visibly}}</td><td>{{t.module_id}}</td><td>{{t.device_type}}</td><td>{{t.fw_ver}}</td><td>{{t.esp_mac}}</td><td>{{t.cus_mac}}</td><td>{{t.flash_id}}</td><td>{{t.test_result}}</td><td>{{t.test_msg}}</td><td>{{t.factory_sid}}</td><td>{{t.batch_sid}}</td><td>{{t.efuse}}</td><td>{{t.query_times}}</td><td>{{t.print_times}}</td><td>{{t.batch_index}}</td><td>{{t.latest}}</td></tr>
+    </tbody>
+  </table>
+  <table class="table">
+    <thead><tr><th>Id</th><th>Created</th><th>FactorySid / BatchSid</th><th>EspMac / CusMac</th><th>TestResult</th><th>DeviceType</th><th>FwVer</th><th>FlashId</th><th>Efuse</th><th>Query / Print</th><!--th>BatchIndex</th--><th>Latest</th></tr></thead>
+    <tbody> 
+      <tr ng-repeat="t in testdatas">
+        <th scope="row">{{t.id}}</th><td>{{t.created}}</td><td>{{t.factory_sid}} / {{t.batch_sid}}</td><td><a href="#/testdata?esp_mac={{t.esp_mac}}">{{t.esp_mac}}</a> / {{t.cus_mac}}</td>
+        <td ng-if="t.test_result == 'success'"><span class="label label-success">{{t.test_result}}</span></td>
+        <td ng-if="t.test_result != 'success'"><span class="label label-danger">{{t.test_result}}</span></td>
+        <td>{{t.device_type}}</td><td>{{t.fw_ver}}</td><td>{{t.flash_id}}</td><td>{{t.efuse}}</td><td>{{t.query_times}} / {{t.print_times}}</td><!--td>{{t.batch_index}}</td--><td>{{t.latest}}</td>
+      </tr>
+    </tbody>
+  </table>
+<div>

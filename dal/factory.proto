@@ -1,0 +1,54 @@
+syntax = "proto3";
+package dal;
+
+import "extend.proto";
+
+option (fid) = 1;
+option (namespace) = "Factory";
+
+message Factory {
+    option (tid)   = 1;
+    option (table) = "factory";
+    option (valid) = "valid";
+    int32 Id = 1;
+    Timestamp Created = 2;
+    Timestamp Updated = 3;
+    bool Visibly = 4;
+    string Sid = 5 [(maxLength)=64];
+    string Name = 6 [(maxLength)=64];
+    string Location = 7 [(maxLength)=64];
+    string Token = 8 [(maxLength)=64];
+    bool IsStaff = 9;
+}
+
+message Factorys {
+    repeated Factory List = 1;
+}
+
+service FactoryDal {
+    rpc FindFactoryBySid(Bytes) returns (Factory) {
+        option (mid) = 1;
+        option (args) = "sid string";
+        option (sql) = "select * from factory where visibly = 1 and sid = ? limit 0, 1";
+    }
+    rpc ListFactoryAll(Bytes) returns (Factorys) {
+        option (mid) = 2;
+        option (args) = "offset int, rowCount int";
+        option (sql) = "select * from factory where visibly = 1 order by id desc limit ?, ?";
+    }
+    rpc FindFactoryByToken(Bytes) returns (Factory) {
+        option (mid) = 3;
+        option (args) = "token string";
+        option (sql) = "select * from factory where visibly = 1 and token = ? limit 0, 1";
+    }
+    rpc FindFactoryByName(Bytes) returns (Factory) {
+        option (mid) = 4;
+        option (args) = "name string";
+        option (sql) = "select * from factory where visibly = 1 and name = ? limit 0, 1";
+    }
+    rpc FindFactoryStaff(Bytes) returns (Factory) {
+        option (mid) = 5;
+        option (args) = "";
+        option (sql) = "select * from factory where visibly = 1 and is_staff = 1 limit 0, 1";
+    }
+}

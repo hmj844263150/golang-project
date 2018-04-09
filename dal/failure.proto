@@ -1,0 +1,58 @@
+syntax = "proto3";
+package dal;
+
+import "extend.proto";
+
+option (fid) = 10;
+option (namespace) = "Failure";
+
+message Failure {
+    option (tid)   = 10;
+    option (table) = "failure";
+    option (valid) = "valid";
+
+    enum mode {
+        _0                  = 0;
+        ESP8266             = 1;
+        ESP32               = 2;
+    }
+    enum failureMode {
+        _1                  = 0;
+        DUT_RXRSSI          = 1;
+        FB_RXRSSI           = 2;
+        FREQ_OFFSET         = 3;
+        RXDC                = 4;
+        RXIQ                = 5;
+        RX_NOISEFLOOR       = 6;
+        TXDC                = 7;
+        TXIQ                = 8;
+        TX_POWER_BACKOFF    = 9;
+        TXP_RESULT          = 10;
+        TX_VDD33            = 11;
+        VDD33               = 12;
+    }
+
+    int32 Id = 1;
+    Timestamp Created = 2;
+    Timestamp Updated = 3;
+    bool   Visibly = 4;
+    int32  FactoryId = 5;
+    int32  BatchId = 6;
+    int32  MacInt = 7;
+    mode   Mode = 8;
+    string Mac = 9;
+    bool   Latest = 10;
+    string raw = 11 [(maxLength)=4096];
+    bool   IsFailed = 12;
+    failureMode FailureMode = 13;
+    failureMode FailureMode1 = 14;
+    failureMode FailureMode2 = 15;
+    failureMode FailureMode3 = 16;
+}
+
+message Failures {
+    repeated Failure List = 1;
+}
+
+service FailureDal {
+}

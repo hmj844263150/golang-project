@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="zh-Hans" ng-app="iotApp">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="a bucket of factory">
+    <link rel="shortcut icon" href="https://iot.espressif.cn/static/img/favicon.ico" type="image/x-icon">
+
+    <title>{{title}} · Factory</title>
+
+    <link href="/static/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/css/app.css" rel="stylesheet">
+    <script src="/static/js/angular.min.js"></script>
+    <script src="/static/js/angular-resource.min.js"></script>
+    <script src="/static/js/angular-route.min.js"></script>
+    <script src="/static/js/angular-cookies.min.js"></script>
+    <script src="/static/js/angular-sanitize.min.js"></script>
+    <script src="/static/js/ngStorage.min.js"></script>
+    <script src="/static/js/jquery-3.1.1.min.js"></script>
+    <script src="/static/js/bootstrap.min.js"></script>
+    <script src="/static/js/moment.min.js"></script>
+    <script src="/static/js/echarts.min.js"></script>
+    <script src="/static/js/ng-file-upload.min.js"></script>
+  </head>
+
+  <body>
+    <div id="header-wrapper" ng-controller="auth">
+      <div id="header" class="container">
+        <ul ng-if="authorized == true" class="nav nav-pills pull-right">
+          <li><a href="#/user">User</a></li>
+          <li><a href="#/factory">Factory</a></li>
+          <li><a href="#/batch">Batch</a></li>
+          <li><a href="#/testdata">Testdata</a></li>
+          <li><a href="#/stats">Stats</a></li>
+          <li class="dropdown ng-scope">
+            <a href="javascript:" class="dropdown-toggle" data-toggle="dropdown"><span class="strong">&#10047;</span></a>
+            <ul class="dropdown-menu">
+              <li><a href="#/login">login</a></li>
+              <li><a ng-click="logout()" href="javascript:">logout</a></li>
+            </ul>
+          </li>
+        </ul>
+        <ul ng-if="authorized == false" class="nav nav-pills pull-right">
+          <li><a href="#/login">Login</a></li>
+        </ul>
+        <h2 class="logo"><a href="#/"><strong>Iot</strong>Factory</a></h2>
+      </div>
+    </div>
+
+    <div id="main-wrapper">
+      <div id="main" class="container">
+        <div ng-view></div>
+      </div>
+    </div>
+
+    <script>
+function check(data) {
+    if(data.status != 200) {
+        alert(data.message);
+        if(data.message.indexOf('403 ') == 0) {
+            window.location.href = '#/login';
+            window.location.reload();
+        }
+        return;
+    }
+};
+function loadScript(url, type, charset) {
+    if (type===undefined) type = 'text/javascript';
+    if (url) {
+        var script = document.querySelector("script[src*='"+url+"']");
+        if (!script) {
+            var heads = document.getElementsByTagName("head");
+            if (heads && heads.length) {
+                var head = heads[0];
+                if (head) {
+                    script = document.createElement('script');
+                    script.setAttribute('src', url);
+                    script.setAttribute('type', type);
+                    if (charset) script.setAttribute('charset', charset);
+                    head.appendChild(script);
+                }
+            }
+        }
+        return script;
+    }
+};
+
+var iotApp = angular.module('iotApp', [
+    'ngRoute',
+    'ngCookies',
+    'ngSanitize',
+    'ngStorage',
+    'iotControllers',
+    'ngFileUpload',
+]);
+iotApp.directive('fileModel', ['$parse', function ($parse) {
+    return {
+        restrict: 'A',
+        link: function(scope, element, attrs) {
+            var model = $parse(attrs.fileModel);
+            var modelSetter = model.assign;
+
+            element.bind('change', function(){
+                scope.$apply(function(){
+                    modelSetter(scope, element[0].files[0]);
+                });
+            });
+        }
+    };
+}]);
+iotApp.config(['$routeProvider',
+    function($routeProvider) {
+        $routeProvider.
+            when('/', {
+                title: 'home',
+                templateUrl: './factory.html',
+                controller: 'factory'
+            }).
+            when('/login', {
+                title: 'Login',
+                templateUrl: './login.html',
+                controller: 'login'
+            }).
+            when('/user', {
+                title: 'User',
+                templateUrl: './user.html',
+                controller: 'user'
+            }).
+            when('/user/create', {
+                title: 'User',
+                templateUrl: './user-create.html',
+                controller: 'userCreate'
+            }).
+            when('/user/modify',{
+                title: 'User',
+                templateUrl: './user-modify.html',
+                controller: 'userModify'
+            }).
+            when('/factory', {
+                title: 'Factory',
+                templateUrl: './factory.html',
+                controller: 'factory'
+            }).
+            when('/factory/create', {
+                title: 'Factory',
+                templateUrl: './factory-create.html',
+                controller: 'factoryCreate'
+            }).
+            when('/batch/', {
+                title: 'Batch',
+                templateUrl: './batch.html',
+                controller: 'batch'
+            }).
+            when('/batch/create', {
+                title: 'Batch',
+                templateUrl: './batch-create.html',
+                controller: 'batchCreate'
+            }).
+            when('/batch/stats', {
+                title: 'Btach',
+                templateUrl: './batch-stats.html',
+                controller: 'batchStats'
+            }).
+            when('/testdata', {
+                title: 'Testdata',
+                templateUrl: './testdata.html',
+                controller: 'testdata'
+            }).
+            when('/stats', {
+                title: 'Stats',
+                templateUrl: './stats.html',
+                controller: 'stats'
+            }).
+            otherwise({
+                redirectTo: '/login'
+            });
+}]);
+
+iotApp.run(['$location', '$rootScope', function($location, $rootScope) {
+    $rootScope.$on('$routeChangeSuccess', function (event, current, previous) {
+        $rootScope.title = current.$$route.title;
+    });
+}]);
+
+iotApp.filter('range', function() {
+    return function(input, total) {
+        total = parseInt(total);
+        for(var i = 0; i < total; i++) {
+            input.push(i);
+        }
+        return input;
+    };
+});
+
+var iotControllers = angular.module('iotControllers', []);
+iotControllers.controller('auth',
+    ['$rootScope', '$scope', '$route', '$routeParams', '$http', '$cookies', '$location', '$anchorScroll', '$filter', '$localStorage',
+    function ($rootScope, $scope, $route, $routeParams, $http, $cookies, $location, $anchorScroll, $filter, $localStorage) {
+
+    var token = $cookies.get('Token');
+    var path = $location.path();
+    $scope.authorized = true;
+    if (token == undefined || token == "") {
+        $scope.authorized = false;
+        if (path != "/login" && path != "/login/") {
+            $location.path('/login')
+            return
+        }
+    }
+    $scope.logout = function() {
+        $cookies.remove('Token');
+        $scope.authorized = false;
+        $location.path('/login')
+        return
+    }
+}]);
+
+iotControllers.controller('login',
+    ['$rootScope', '$scope', '$route', '$routeParams', '$http', '$cookies', '$location', '$anchorScroll', '$filter', '$localStorage',
+    function ($rootScope, $scope, $route, $routeParams, $http, $cookies, $location, $anchorScroll, $filter, $localStorage) {
+
+    // $scope.login = function() {
+    //     $http.get('/factorys', {headers: {'token': $scope.token}}).success(function(data) {
+    //         if(data.status != 200) {
+    //             alert("login failed");
+    //             return
+    //         }
+    //         now = new Date();
+    //         expires = new Date(now.getFullYear(), now.getMonth(), now.getDate()+30);
+    //         $cookies.put('Token', data.factorys[0].token, {'path': '/', 'expires': expires});
+    //         window.location.href = location.origin + '/s/#/factory';
+    //         window.location.reload();
+    //         return
+    //     });
+    // }
+    $scope.login = function() {
+        $http.get('/user/login?account='+$scope.account+'&password='+$scope.password, {headers: {'token': 'temp'}}).success(function(data) {
+            if(data.status != 200) {
+                alert("login failed");
+                return
+            }
+            now = new Date();
+            expires = new Date(now.getFullYear(), now.getMonth(), now.getDate()+30);
+            $cookies.put('Token', data.token, {'path': '/', 'expires': expires});
+            window.location.href = location.origin + '/s/#/factory';
+            window.location.reload();
+            return
+        });
+    }
+}]);
+
+iotControllers.controller('factory', 
+    ['$rootScope', '$scope', '$route', '$routeParams', '$http', '$cookies', '$location', '$anchorScroll', '$filter', '$localStorage',
+    function ($rootScope, $scope, $route, $routeParams, $http, $cookies, $location, $anchorScroll, $filter, $localStorage) {
+
+    $http.get('/factorys', {headers: {'token': $cookies.get('Token')}}).success(function(data) {
+        check(data);
+        $scope.factorys = data.factorys;
+    });
+
+}]);
+
+iotControllers.controller('factoryCreate', 
+    ['$rootScope', '$scope', '$route', '$routeParams', '$http', '$cookies', '$location', '$anchorScroll', '$filter', '$localStorage',
+    function ($rootScope, $scope, $route, $routeParams, $http, $cookies, $location, $anchorScroll, $filter, $localStorage) {
+    $scope.factory = {};
+    $scope.create_factory = function() {
+      $http.post('/factory/', {factory: $scope.factory}, {headers: {'token': $cookies.get('Token')}}).success(function(data) {
+        check(data);
+        $location.path('/factory');
+        return;
+      });
+    };
+}]);
+
+iotControllers.controller('user', 
+    ['$rootScope', '$scope', '$route', '$routeParams', '$http', '$cookies', '$location', '$anchorScroll', '$filter', '$localStorage',
+    function ($rootScope, $scope, $route, $routeParams, $http, $cookies, $location, $anchorScroll, $filter, $localStorage) {
+
+    $http.get('/users', {headers: {'token': $cookies.get('Token')}}).success(function(data) {
+        check(data);
+        $scope.users = data.users;
+    });
+
+}]);
+
+iotControllers.controller('userCreate', 
+    ['$rootScope', '$scope', '$route', '$routeParams', '$http', '$cookies', '$location', '$anchorScroll', '$filter', '$localStorage',
+    function ($rootScope, $scope, $route, $routeParams, $http, $cookies, $location, $anchorScroll, $filter, $localStorage) {
+    $scope.user = {};
+    $scope.user.factory_sid = "-- * --";
+    $scope.warning_save = "";
+    $http.get('/factorys', {headers: {'token': $cookies.get('Token')}}).success(function(data) {
+        check(data);
+        $scope.factorys = data.factorys;
+        $scope.factory_map = {};
+        for(var i = 0; i < $scope.factorys.length; i++) {
+            $scope.factory_map[$scope.factorys[i].sid] = $scope.factorys[i];
+        }
+    });
+
+    $scope.create_user = function(){
+        if ($scope.user.factory_sid == "-- * --") {
+            $scope.warning_save = 'please choose factory_sid first';
+            return;
+        }
+        if ($scope.user.account == undefined) {
+            $scope.warning_save = 'Account must not empty';
+            return;
+        }
+        if ($scope.user.password == undefined) {
+            $scope.warning_save = 'Password must not empty';
+            return;
+        }
+        if ($scope.user.name == undefined) {
+            $scope.warning_save = 'Name must not empty';
+            return;
+        }
+        $http.post('/user/', {user: $scope.user}, {headers: {'token': $cookies.get('Token')}}).success(function(data) {
+            if(data.status != 200) {
+                alert(data.message);
+                return;
+            }
+
+            $location.path('/user');
+            return;
+        });
+    };
+
+}]);
+
+iotControllers.controller('userModify', 
+    ['$rootScope', '$scope', '$route', '$routeParams', '$http', '$cookies', '$location', '$anchorScroll', '$filter', '$localStorage',
+    function ($rootScope, $scope, $route, $routeParams, $http, $cookies, $location, $anchorScroll, $filter, $localStorage) {
+    $http.get('/factorys', {headers: {'token': $cookies.get('Token')}}).success(function(data) {
+        check(data);
+        $scope.factorys = data.factorys;
+        $scope.factory_map = {};
+        for(var i = 0; i < $scope.factorys.length; i++) {
+            $scope.factory_map[$scope.factorys[i].sid] = $scope.factorys[i];
+        }
+    });
+
+    $scope.user = {};
+    $scope.warning_save = "";
+    if($routeParams.account != undefined) {
+        $scope.account = $routeParams.account;
+    }
+    var render_user = function(){
+        $scope.is_render_batch = true;
+        $http.get('/user/modify?account='+$scope.account, {headers: {'token': $cookies.get('Token')}}).success(function(data) {
+            if(data.status != 200) {
+                alert(data.message);
+                $location.path('/user');
+                return;
+            }
+            $scope.user = data.user;
+        });
+    }
+    render_user();
+
+    $scope.modify_user = function(){
+        if ($scope.user.factory_sid == "-- * --") {
+            $scope.warning_save = 'please choose factory_sid first';
+            return;
+        }
+        if ($scope.user.password == undefined || $scope.user.password == "") {
+            $scope.warning_save = 'Password must not empty';
+            return;
+        }
+        if ($scope.user.name == undefined || $scope.user.name == "") {
+            $scope.warning_save = 'Name must not empty';
+            return;
+        }
+        $http.post('/user/modify', {user: $scope.user}, {headers: {'token': $cookies.get('Token')}}).success(function(data) {
+            if(data.status != 200) {
+                alert(data.message);
+                return;
+            }
+
+            $location.path('/user');
+            return;
+        });
+    };
+
+}]);
+
+iotControllers.controller('batch',
+    ['$rootScope', '$scope', '$route', '$routeParams', '$http', '$cookies', '$location', '$anchorScroll', '$filter', '$localStorage', '$timeout', 'Upload',
+    function ($rootScope, $scope, $route, $routeParams, $http, $cookies, $location, $anchorScroll, $filter, $localStorage, $timeout, Upload) {
+
+    var qs = [];
+    if($routeParams.batch_sid != undefined) {
+        qs.push("batch_sid=" + $routeParams.batch_sid);
+    }
+    if($routeParams.factory_sid != undefined) {
+        qs.push("factory_sid=" + $routeParams.factory_sid);} var q = "?" + qs.join("&"); $scope.query = window.location.hash.split('?')[1];
+    $http.get('/batchs' + q, {headers: {'token': $cookies.get('Token')}}).success(function(data) {
+        check(data);
+        $scope.batchs = data.batchs;
+    });
+    $scope.batch_sid = "";
+    $scope.batch_file = {file: null};
+    $scope.upload_batch_file = function(batch_sid, file, errFiles) {
+        $scope.batch_sid = batch_sid;
+	$scope.batch_file.file = file;
+        if(!$scope.batch_sid) {
+            alert("batch id: not null");
+            return
+        }
+        if(!$scope.batch_file || !$scope.batch_file.file) {
+            alert("need batch file");
+            return
+        }
+        var formData = new FormData();
+        formData.append("batch_sid", $scope.batch_sid);
+        formData.append("batch_file", $scope.batch_file.file);
+        $http.post("/batch/file?.ignore_body=true&action=upload&batch_sid="+$scope.batch_sid, formData, {transformRequest: angular.identity, headers: {"Content-Type": undefined, 'Token': $cookies.get('Token')}})
+        .success(function(data) {
+            alert('upload success');
+        })
+        .error(function(data) {
+            alert('upload error');
+        });
+    };
+    $scope.download_batch_file = function(batch_sid) {
+        $scope.batch_sid = batch_sid;
+        $http.get("/batch/file?action=download&batch_sid="+$scope.batch_sid, {headers: {"Content-Type": undefined, 'token': $cookies.get('Token')}});
+    };
+}]);
+
+iotControllers.controller('batchCreate',
+    ['$rootScope', '$scope', '$route', '$routeParams', '$http', '$cookies', '$location', '$anchorScroll', '$filter', '$localStorage',
+    function ($rootScope, $scope, $route, $routeParams, $http, $cookies, $location, $anchorScroll, $filter, $localStorage) {
+
+    $http.get('/factorys', {headers: {'token': $cookies.get('Token')}}).success(function(data) {
+        check(data);
+        $scope.factorys = data.factorys;
+    });
+
+    $scope.batch = {};
+    $scope.create_batch = function() {
+      $http.post('/batch/', {batch: $scope.batch}, {headers: {'token': $cookies.get('Token')}}).success(function(data) {
+        check(data);
+        $location.path('/batch');
+        return;
+      });
+    };
+}]);
+
+iotControllers.controller('testdata',
+    ['$rootScope', '$scope', '$route', '$routeParams', '$http', '$cookies', '$location', '$anchorScroll', '$filter', '$localStorage', '$timeout',
+    function ($rootScope, $scope, $route, $routeParams, $http, $cookies, $location, $anchorScroll, $filter, $localStorage, $timeout) {
+
+    loadScript('https://cdn.staticfile.org/xlsx/0.8.0/xlsx.core.min.js', 'text/javascript', 'utf-8');
+    loadScript('https://cdn.staticfile.org/FileSaver.js/2014-11-29/FileSaver.min.js', 'text/javascript', 'utf-8');
+    loadScript('https://cdn.staticfile.org/TableExport/3.3.7/js/tableexport.min.js', 'text/javascript', 'utf-8');
+    
+    $scope.esp_mac = "";
+    $scope.factory_sid = "-- * --";
+    $scope.batch_sid = "-- * --";
+    $scope.row_count = "100";
+    $scope.export_email = "";
+    var qs = [];
+    if($routeParams.batch_sid != undefined) {
+        qs.push("batch_sid=" + $routeParams.batch_sid);
+        $scope.batch_sid = $routeParams.batch_sid;
+    }
+    if($routeParams.factory_sid != undefined) {
+        qs.push("factory_sid=" + $routeParams.factory_sid);
+        $scope.factory_sid = $routeParams.factory_sid;
+    }
+    if($routeParams.esp_mac != undefined) {
+        qs.push("esp_mac=" + $routeParams.esp_mac);
+        $scope.esp_mac = $routeParams.esp_mac;
+    }
+    if($routeParams.row_count != undefined) {
+        qs.push("row_count=" + $routeParams.row_count);
+        $scope.row_count = $routeParams.row_count;
+    }
+    $http.get('/factorys?with_batch=true', {headers: {'token': $cookies.get('Token')}}).success(function(data) {
+        check(data);
+        $scope.factorys = data.factorys;
+        $scope.factory_map = {};
+        for(var i = 0; i < $scope.factorys.length; i++) {
+            $scope.factory_map[$scope.factorys[i].sid] = $scope.factorys[i];
+        }
+        factory = $scope.factory_map[$scope.factory_sid];
+        if(factory != undefined) {
+            $scope.batchs = factory.batchs;
+        }
+    });
+
+    var q = "?" + qs.join("&");
+    $scope.query = window.location.hash.split('?')[1];
+    $http.get('/testdata/dump' + q, {headers: {'token': $cookies.get('Token')}}).success(function(data) {
+        check(data);
+        $scope.testdatas = data.testdatas;
+    });
+    var tables = null;
+    $scope.export_to_email = function(email) {
+        var qq = q + "&email=" + email;
+        $http.get('/testdata/dump' + qq, {headers: {'token': $cookies.get('Token')}}).success(function(data) {
+            check(data);
+            $timeout(function(){
+                window.location.href = data.url;
+            }, 5000, false);
+            alert(data.message);
+        });
+    }
+    $scope.export = function() {
+        $scope.export_mode = true;
+        if(tables == null) {
+            tables = $("#table-export").tableExport();
+        }
+        tables.reset();
+    };
+    $scope.search = function() {
+        factory = $scope.factory_map[$scope.factory_sid];
+        if(factory != undefined) {
+            $scope.batchs = factory.batchs;
+        }
+        q = {row_count: $scope.row_count};
+        if($scope.esp_mac != undefined && $scope.esp_mac != "") {
+            q.esp_mac = $scope.esp_mac;
+            $location.path('/testdata').search(q);
+            return
+        }
+        if($scope.factory_sid != "-- * --" && $scope.batch_sid != undefined && $scope.batch_sid != "-- * --") {
+            q.factory_sid = $scope.factory_sid;
+            q.batch_sid = $scope.batch_sid;
+            $location.path('/testdata').search(q);
+            return
+        }
+        if($scope.factory_sid == "-- * --") {
+            $location.path('/testdata').search(q);
+            return
+        }
+        if($scope.batch_sid == "-- * --") {
+            q.factory_sid = $scope.factory_sid;
+            $location.path('/testdata').search(q);
+            return
+        }
+        $location.path('/testdata').search(q);
+    };
+}]);
+
+iotControllers.controller('batchStats',
+    ['$rootScope', '$scope', '$route', '$routeParams', '$http', '$cookies', '$location', '$anchorScroll', '$filter', '$localStorage', '$timeout',
+    function ($rootScope, $scope, $route, $routeParams, $http, $cookies, $location, $anchorScroll, $filter, $localStorage, $timeout) {
+
+    $scope.is_render_batch = false;
+    $scope.factory_sid = "-- * --";
+    $scope.batch_sid = "-- * --";
+    $scope.b = {cnt:"loding", success:"loding", rejected:"loding"}
+    $scope.print_pass = 0
+    if($routeParams.batch_sid != undefined) {
+        $scope.batch_sid = $routeParams.batch_sid;
+    }
+    if($routeParams.factory_sid != undefined) {
+        $scope.factory_sid = $routeParams.factory_sid;
+    }
+    var render_batch = function(){
+        $scope.is_render_batch = true;
+        $http.get('/batch/stats?batch_detail='+$scope.batch_sid, {headers: {'token': $cookies.get('Token')}}).success(function(dataO) {
+            var batch = dataO.batch;
+            var sum = batch.success + batch.rejected;
+            //$scope.print_pass = dataO.print_pass;
+            batch.success_pct = parseInt(batch.success*10000 / sum) / 100;
+            //batch.right_first_time_pct = parseInt(batch.right_first_time*10000 / batch.cnt) / 100;
+            batch.failed_pct = parseInt(batch.failed*10000 / sum) / 100;
+            batch.rejected_pct = parseInt(batch.rejected*10000 / sum) / 100;
+            $scope.b = batch;
+        });
+    }
+    $scope.update_batch = function(){
+        render_batch();
+    }
+    render_batch();
+}]);
+
+iotControllers.controller('stats',
+    ['$rootScope', '$scope', '$route', '$routeParams', '$http', '$cookies', '$location', '$anchorScroll', '$filter', '$localStorage', '$timeout',
+    function ($rootScope, $scope, $route, $routeParams, $http, $cookies, $location, $anchorScroll, $filter, $localStorage, $timeout) {
+
+    var renderChart = function(id, legends, xAxis, yAxis, series) {
+        var chart = echarts.init(document.getElementById(id));
+        if(yAxis == null) {
+            yAxis = [{"type":"value"}];
+        }
+        var option = {"tooltip":{"trigger":"axis","axisPointer":{"type":"shadow"}},"legend":{"data":[]},"grid":{"left":"3%","right":"4%","bottom":"3%","containLabel":true},"xAxis":[{"type":"category","data":[]}],"yAxis": yAxis,"series":[]}
+        option.legend.data = legends;
+        option.xAxis[0].data = xAxis;
+        option.series = series;
+        chart.setOption(option);
+        chart.on('click', function (params) {
+            $scope.batch_sid = params.name.split('-')[0];
+            $scope.render_batch_sid($scope.batch_sid);
+        });
+    }
+    $scope.factory_map = {};
+    $http.get('/factorys?with_batch=true', {headers: {'token': $cookies.get('Token')}}).success(function(data) {
+        $scope.factorys = data.factorys;
+        $scope.factory_map = {};
+    });
+
+    var legends = ['总数', '测试成功', '一次测试成功', '测试失败', '不良品'];
+    var render_batch = function(by) {
+        $scope.is_render_factory = false;
+        $scope.is_render_batch = true;
+        $http.get('/batch/stats?batch_sid='+$scope.batch_sid, {headers: {'token': $cookies.get('Token')}}).success(function(dataO) {
+            $scope.days = dataO.days;
+            $scope.days_reverse = dataO.days.reverse();
+            $scope.weeks = dataO.weeks;
+            $scope.weeks_reverse = dataO.weeks.reverse();
+            var objs = [{name: 'batch-sid-days', batchs: dataO.days}, {name: 'batch-sid-weeks', batchs: dataO.weeks}];
+            for(var i = 0; i < objs.length; i++) {
+                var xAxis = [];
+                var yAxis = null;
+                var cnt_series = {name: '总数', type: 'bar', data: []};
+                var success_series = {name: '测试成功', type: 'bar', data: []};
+                var right_first_time_series = {name: '一次测试成功', type: 'bar', data: []};
+                var failed_series = {name: '测试失败', type: 'bar', data: []};
+                var rejected_series = {name: '不良品', type: 'bar', data: []};
+                var success_pct_series = {name: '测试成功%', type: 'line', data: []};
+                var right_first_time_pct_series = {name: '一次测试成功%', type: 'line', data: []};
+        
+                var obj = objs[i];
+                var name = obj.name;
+                var batchs = obj.batchs;
+                for(var j = 0; j < batchs.length && j < 10; j++) {
+                    var batch = batchs[j];
+                    batch.success_pct = batch.success_pct / 100;
+                    batch.right_first_time_pct = batch.right_first_time_pct / 100;
+                    batch.failed_pct = batch.failed_pct / 100;
+                    batch.rejected_pct = batch.rejected_pct / 100;
+                    xAxis.push(batch.start);
+                    if(by == 'abs') {
+                        cnt_series.data.push(batch.cnt);
+                        success_series.data.push(batch.success);
+                        right_first_time_series.data.push(batch.right_first_time);
+                        failed_series.data.push(batch.failed);
+                        rejected_series.data.push(batch.rejected);
+                        success_pct_series.data.push(batch.success_pct);
+                        right_first_time_pct_series.data.push(batch.right_first_time_pct);
+                    } else if(by == 'pct') {
+                        cnt_series.data.push(100);
+                        success_series.data.push(batch.success_pct);
+                        right_first_time_series.data.push(batch.right_first_time_pct);
+                        failed_series.data.push(batch.failed_pct);
+                        rejected_series.data.push(batch.rejected_pct);
+                    } else if(by == 'plato') {
+                        cnt_series.data.push(batch.cnt);
+                        success_series.data.push(batch.success_pct);
+                        right_first_time_series.data.push(batch.right_first_time_pct);
+                    }
+                }
+                var series = [cnt_series, success_series, right_first_time_series, failed_series, rejected_series];
+                if(by == 'abs') {
+                    cnt_series.yAxisIndex = 0;
+                    success_pct_series.yAxisIndex = 1;
+                    right_first_time_pct_series.yAxisIndex = 1;
+                    legends.push('测试成功%')
+                    legends.push('一次测试成功%');
+                    series.push(success_pct_series);
+                    series.push(right_first_time_pct_series);
+                    yAxis = [{"type":"value","name":"总数","position":"left","axisLine":{},"axisLabel":{"formatter":"{value}"}},{"type":"value","name":"百分比","min":0,"max":100,"position":"right","axisLine":{},"axisLabel":{"formatter":"{value} %"}}]
+                }
+                if(by == 'plato') {
+                    cnt_series.type = 'bar'
+                    cnt_series.yAxisIndex = 0;
+                    success_series.type = 'line'
+                    success_series.yAxisIndex = 1;
+                    right_first_time_series.type = 'line'
+                    right_first_time_series.yAxisIndex = 1;
+                    series = [cnt_series, success_series, right_first_time_series]
+
+                    yAxis = [{"type":"value","name":"总数","position":"left","axisLine":{},"axisLabel":{"formatter":"{value}"}},{"type":"value","name":"百分比","min":0,"max":100,"position":"right","axisLine":{},"axisLabel":{"formatter":"{value} %"}}]
+                }
+                renderChart(name, legends, xAxis, yAxis, series)
+            }
+        });
+    }
+    $scope.render_batch_sid = function(sid) {
+        $scope.batch_sid = sid;
+        $scope.batch = $scope.batch_map[sid];
+        $scope.factory_sid = $scope.batch.factory_sid;
+        render_batch($scope.by);
+    }
+    var render_factory = function(by) {
+        $scope.is_render_factory = true;
+        $scope.is_render_batch = false;
+        $http.get('/factorys?with_batch=true', {headers: {'token': $cookies.get('Token')}}).success(function(data) {
+            $scope.factorys = data.factorys;
+            $scope.factory_map = {};
+            $scope.batch_map = {};
+
+            for(var i = 0; i < $scope.factorys.length; i++) {
+                var factory = $scope.factorys[i];
+                $scope.factory_map[factory.sid] = factory;
+                var batch_sids = [];
+                for(var j = 0; j < factory.batchs.length && j < 30; j++) {
+                    var batch = factory.batchs[j];
+                    batch_sids.push(batch.sid);
+                }
+                if(batch_sids.length == 0) {
+                    continue;
+                }
+                $http.get('/batch/stats?batch_sids='+batch_sids.join(','), {headers: {'token': $cookies.get('Token')}}).success(function(dataO) {
+                    var batchs = [];
+                    var xAxis = [];
+                    var yAxis = null;
+                    var cnt_series = {name: '总数', type: 'bar', data: []};
+                    var success_series = {name: '测试成功', type: 'bar', data: []};
+                    var right_first_time_series = {name: '一次测试成功', type: 'bar', data: []};
+                    var failed_series = {name: '测试失败', type: 'bar', data: []};
+                    var rejected_series = {name: '不良品', type: 'bar', data: []};
+                    var success_pct_series = {name: '测试成功%', type: 'line', data: []};
+                    var right_first_time_pct_series = {name: '一次测试成功%', type: 'line', data: []};
+                    for(var k = 0; k < dataO.batchs.length && k < 30; k++) {
+                        var batch = dataO.batchs[k];
+                        $scope.batch_map[batch.sid] = batch;
+                        batchs.push(batch);
+                        batch.cnt = batch.success + batch.rejected;
+                        batch.success_pct = parseInt(batch.success*10000 / batch.cnt) / 100;
+                        batch.right_first_time_pct = parseInt(batch.right_first_time*10000 / batch.cnt) / 100;
+                        batch.failed_pct = parseInt(batch.failed*10000 / batch.cnt) / 100;
+                        batch.rejected_pct = parseInt(batch.rejected*10000 / batch.cnt) / 100;
+                        xAxis.push(batch.sid + "-" + batch.desc);
+                        if(by == 'abs') {
+                            cnt_series.data.push(batch.cnt);
+                            success_series.data.push(batch.success);
+                            right_first_time_series.data.push(batch.right_first_time);
+                            failed_series.data.push(batch.failed);
+                            rejected_series.data.push(batch.rejected);
+                            success_pct_series.data.push(batch.success_pct);
+                            right_first_time_pct_series.data.push(batch.right_first_time_pct);
+                        } else if(by == 'pct') {
+                            cnt_series.data.push(100);
+                            success_series.data.push(batch.success_pct);
+                            right_first_time_series.data.push(batch.right_first_time_pct);
+                            failed_series.data.push(batch.failed_pct);
+                            rejected_series.data.push(batch.rejected_pct);
+                        } else if(by == 'plato') {
+                            cnt_series.data.push(batch.cnt);
+                            success_series.data.push(batch.success_pct);
+                            right_first_time_series.data.push(batch.right_first_time_pct);
+                        }
+                        // console.log(cnt_series.data);
+                    }
+                    $scope.factory_map[dataO.batchs[0].factory_sid].batchs = batchs;
+                    var series = [cnt_series, success_series, right_first_time_series, failed_series, rejected_series];
+                    if(by == 'abs') {
+                        cnt_series.yAxisIndex = 0;
+                        success_pct_series.yAxisIndex = 1;
+                        right_first_time_pct_series.yAxisIndex = 1;
+                        legends.push('测试成功%')
+                        legends.push('一次测试成功%');
+                        series.push(success_pct_series);
+                        series.push(right_first_time_pct_series);
+                        yAxis = [{"type":"value","name":"总数","position":"left","axisLine":{},"axisLabel":{"formatter":"{value}"}},{"type":"value","name":"百分比","min":0,"max":100,"position":"right","axisLine":{},"axisLabel":{"formatter":"{value} %"}}]
+                    }
+                    if(by == 'plato') {
+                        cnt_series.type = 'bar'
+                        cnt_series.yAxisIndex = 0;
+                        success_series.type = 'line'
+                        success_series.yAxisIndex = 1;
+                        right_first_time_series.type = 'line'
+                        right_first_time_series.yAxisIndex = 2;
+                        series = [cnt_series, success_series, right_first_time_series]
+
+                        yAxis = [{"type":"value","name":"总数","position":"left","axisLine":{},"axisLabel":{"formatter":"{value}"}},{"type":"value","name":"百分比","min":0,"max":100,"position":"right","axisLine":{},"axisLabel":{"formatter":"{value} %"}},{"type":"value","name":"百分比","min":0,"max":100,"position":"right","axisLine":{},"axisLabel":{"formatter":"{value} %"}}]
+                    }
+                    renderChart('factory-sid-'+dataO.batchs[0].factory_sid, legends, xAxis, yAxis, series)
+                });
+            }
+        });
+    }
+    $scope.is_render_factory = false;
+    $scope.is_render_batch = false;
+    $scope.factory_sid = "-- * --";
+    $scope.batch_sid = "-- * --";
+    $scope.by = "abs";
+    $scope.render = function() {
+        factory = $scope.factory_map[$scope.factory_sid];
+        if(factory != undefined) {
+            $scope.batchs = factory.batchs;
+        }
+        if($scope.factory_sid == "-- * --") {
+            $scope.batch_sid = "-- * --";
+            $scope.batchs = [];
+            render_factory($scope.by);
+            return;
+        }
+        if($scope.batch_sid != "-- * --") {
+            $scope.render_batch_sid($scope.batch_sid);
+            return;
+        }
+    };
+    $scope.render();
+}]);
+    </script>
+  </body>
+</html>

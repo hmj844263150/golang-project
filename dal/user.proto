@@ -1,0 +1,51 @@
+syntax = "proto3";
+package dal;
+
+import "extend.proto";
+
+option (fid) = 1;
+option (namespace) = "User";
+
+message User {
+    option (tid)   = 1;
+    option (table) = "user";
+    option (valid) = "valid";
+    int32 Id = 1;
+    Timestamp Created = 2;
+    Timestamp Updated = 3;
+    bool   Visibly = 5;
+    string Account = 6 [(maxLength)=64];
+    string Password = 7 [(maxLength)=64];
+    string Name = 8 [(maxLength)=64];
+    string FactorySid = 9 [(maxLength)=64];
+    int32 GroupId = 10;
+    string Email = 11 [(maxLength)=128];
+    string Description = 12[(maxLength)=256];
+}
+
+message Users {
+    repeated User List = 1;
+}
+
+service UserDal {
+    rpc ListUserAll(Bytes) returns (Users) {
+        option (mid) = 1;
+        option (args) = "offset int, rowCount int";
+        option (sql) = "select * from user where visibly = 1 order by id desc limit ?, ?";
+    }
+    rpc FindUserByAccount(Bytes) returns (User) {
+        option (mid) = 2;
+        option (args) = "account string";
+        option (sql) = "select * from user where visibly = 1 and account = ? limit 0, 1";
+    }
+    rpc ListUserByGroupId(Bytes) returns (Users) {
+        option (mid) = 3;
+        option (args) = "groupId int, offset int, rowCount int";
+        option (sql) = "select * from user where visibly = 1 and group_id = ? limit ?, ?";
+    }
+    rpc ListUserByFactorySid(Bytes) returns (Users) {
+        option (mid) = 4;
+        option (args) = "factorySid string, offset int, rowCount int";
+        option (sql) = "select * from user where visibly = 1 and factory_sid = ? limit ?, ?";
+    }
+}

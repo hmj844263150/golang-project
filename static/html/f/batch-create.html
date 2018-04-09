@@ -1,0 +1,53 @@
+<h1 class="page-header">Create · Batch</h1>
+<div class="profile-form col-sm-8">
+  <div ng-if="warning" class="alert alert-warning">{{warning}}</div>
+  <form class="form-horizontal input-lg" role="form">
+    <div class="form-group">
+      <label for="factory_sid" class="col-sm-3 control-label">Factory Sid</label>
+      <div class="col-sm-9">
+        <input readonly="readonly" type="text" class="form-control input-lg" id="factory_sid" placeholder="factory sid" value="{{factory_sid}}">
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="name" class="col-sm-3 control-label">Name</label>
+      <div class="col-sm-9">
+        <input ng-model="batch.name" type="text" class="form-control input-lg" id="name" placeholder="name">
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="desc" class="col-sm-3 control-label">Description</label>
+      <div class="col-sm-9">
+        <input ng-model="batch.desc" type="text" class="form-control input-lg" id="desc" placeholder="description">
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="cnt" class="col-sm-3 control-label">Count</label>
+      <div class="col-sm-9">
+        <input ng-model="batch.cnt" type="text" class="form-control input-lg" id="cnt" placeholder="count">
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="is_cus" class="col-sm-3 control-label">Customize</label>
+      <div class="col-sm-9">
+        <input ng-model="batch.is_cus" type="checkbox">
+      </div>
+    </div>
+    <div ng-if="batch.is_cus" class="form-group">
+      <label for="cus_mac_from" class="col-sm-3 control-label">Mac From</label>
+      <div class="col-sm-9">
+        <input ng-model="batch.cus_mac_from" type="text" class="form-control input-lg" id="cus_mac_from" placeholder="customize mac from">
+      </div>
+    </div>
+    <div ng-if="batch.is_cus" class="form-group">
+      <label for="cus_mac_to" class="col-sm-3 control-label">Mac To</label>
+      <div class="col-sm-9">
+        <input ng-model="batch.cus_mac_to" type="text" class="form-control input-lg" id="cus_mac_to" placeholder="customize mac to">
+      </div>
+    </div>
+    <div class="form-group">
+      <div class="col-sm-offset-3 col-sm-9">
+        <button ng-click="create_batch()" type="submit" class="profile-button btn btn-lg btn-default"><span class="wait-and-ok"></span> Save </button>
+      </div>
+    </div>
+  </form>
+</div>

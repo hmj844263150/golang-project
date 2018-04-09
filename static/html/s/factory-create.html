@@ -1,0 +1,23 @@
+<h1 class="page-header">Create · Factory </h1>
+<div class="profile-form col-sm-8">
+  <div ng-if="warning" class="alert alert-warning">{{warning}}</div>
+  <form class="form-horizontal input-lg" role="form">
+    <div class="form-group">
+      <label for="name" class="col-sm-3 control-label">Name</label>
+      <div class="col-sm-9">
+        <input ng-model="factory.name" type="text" class="form-control input-lg" id="name" placeholder="name">
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="location" class="col-sm-3 control-label">Location</label>
+      <div class="col-sm-9">
+        <input ng-model="factory.location" type="text" class="form-control input-lg" id="location" placeholder="location">
+      </div>
+    </div>
+    <div class="form-group">
+      <div class="col-sm-offset-3 col-sm-9">
+        <button ng-click="create_factory()" type="submit" class="profile-button btn btn-lg btn-default"><span class="wait-and-ok"></span> Save </button>
+      </div>
+    </div>
+  </form>
+</div>

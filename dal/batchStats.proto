@@ -1,0 +1,41 @@
+syntax = "proto3";
+package dal;
+
+import "extend.proto";
+
+option (fid) = 8;
+option (namespace) = "BatchStats";
+
+message BatchStats {
+    option (tid)   = 8;
+    option (table) = "batch_stats";
+    option (valid) = "valid";
+    int32 Id = 1;
+    Timestamp Created = 2;
+    Timestamp Updated = 3;
+    bool Visibly = 4;
+    int32 BatchId = 5;
+    Timestamp Start = 6;
+    Timestamp End = 7;
+    int32 Cnt = 16;
+    int32 Success = 8;
+    int32 SuccessPct = 9;
+    int32 RightFirstTime = 10;
+    int32 RightFirstTimePct = 11;
+    int32 Failed = 12;
+    int32 FailedPct = 13;
+    int32 Rejected = 14;
+    int32 RejectedPct = 15;
+}
+
+message BatchStatses {
+    repeated BatchStats List = 1;
+}
+
+service BatchStatsDal {
+    rpc FindBatchStatsByBatchIdStartEnd(Bytes) returns (BatchStats) {
+        option (mid) = 1;
+        option (args) = "batchId int, start time.Time, end time.Time";
+        option (sql) = "select * from batch_stats where visibly = 1 and batch_id = ? and start = ? and end = ?";
+    }
+}

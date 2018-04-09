@@ -1,0 +1,71 @@
+<div>
+  <p>
+    <span class="small muted" style="font-size: 40%">{{query}}</span>
+    <div class="pull-right">
+      <form class="form-inline pull-right" role="form">
+        <span class="font-size-small margin-right-3">factory</span>
+        <div class="form-group margin-right-5">
+          <select id="factory" ng-change="render()" ng-model="factory_sid" class="form-control input-sm">
+            <option value="-- * --" selected>-- * --</option>
+            <option ng-repeat="factory in factorys" value="{{factory.sid}}">{{factory.sid}}</option>
+          </select>
+        </div>
+        <span class="font-size-small margin-right-3">batch</span>
+        <div class="form-group margin-right-5">
+          <select id="batch" ng-change="render()" ng-model="batch_sid" class="form-control input-sm">
+            <option value="-- * --" selected>-- * --</option>
+            <option ng-repeat="batch in batchs" value="{{batch.sid}}">{{batch.desc}} - {{batch.sid}}</option>
+          </select>
+        </div>
+        <span class="font-size-small margin-right-3">by</span>
+        <div class="form-group margin-right-5">
+          <select id="by" ng-change="render()" ng-model="by" class="form-control input-sm">
+            <option value="abs">产值</option>
+            <option value="pct">相对百分比</option>
+            <option value="plato">柏拉图</option>
+          </select>
+        </div>
+      </form>
+    </div>
+  </p>
+</div>
+<div ng-if="is_render_factory">
+  <div ng-if="factory.batchs.length > 0 && factory.id != 1 && factory.id != 4" ng-repeat="factory in factorys" value="{{factory.sid}}">
+    <h1 class="page-header">{{factory.sid}}</h1>
+    <div id="factory-sid-{{factory.sid}}" style="width: 1400px;height:400px;"></div>
+    <table class="table">
+      <thead><tr><th>批次</th><th>总数</th><th>测试成功</th><th>一次测试成功</th><th>测试失败</th><th>不良品</th></tr></thead>
+      <tbody> 
+        <tr ng-repeat="b in factory.batchs.slice(0,30)">
+          <td scope="row"><a ng-click="render_batch_sid(b.sid)" href="javascript:;">{{b.name}} - {{b.sid}} - {{b.desc}}</a></td><td>{{b.cnt}}</td><td>{{b.success}} ({{b.success_pct}}%)</td><td>{{b.right_first_time}} ({{b.right_first_time_pct}}%)</td><td>{{b.failed}} ({{b.failed_pct}}%)</td><td>{{b.rejected}} ({{b.rejected_pct}}%)</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+<div ng-if="is_render_batch">
+  <div>
+    <h1 class="page-header">{{batch.sid}} - {{batch.desc}} 最近七天</h1>
+    <div id="batch-sid-days" style="width: 1400px;height:400px;"></div>
+    <table class="table">
+      <thead><tr><th>时间</th><th>总数</th><th>测试成功</th><th>一次测试成功</th><th>测试失败</th><th>不良品</th></tr></thead>
+      <tbody> 
+        <tr ng-repeat="b in days_reverse">
+          <td scope="row">{{b.start}}</td><td>{{b.cnt}}</td><td>{{b.success}} ({{b.success_pct}}%)</td><td>{{b.right_first_time}} ({{b.right_first_time_pct}}%)</td><td>{{b.failed}} ({{b.failed_pct}}%)</td><td>{{b.rejected}} ({{b.rejected_pct}}%)</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div>
+    <h1 class="page-header">最近七周</h1>
+    <div id="batch-sid-weeks" style="width: 1400px;height:400px;"></div>
+    <table class="table">
+      <thead><tr><th>时间</th><th>总数</th><th>测试成功</th><th>一次测试成功</th><th>测试失败</th><th>不良品</th></tr></thead>
+      <tbody> 
+        <tr ng-repeat="b in weeks_reverse">
+          <td scope="row">{{b.start}}</td><td>{{b.cnt}}</td><td>{{b.success}} ({{b.success_pct}}%)</td><td>{{b.right_first_time}} ({{b.right_first_time_pct}}%)</td><td>{{b.failed}} ({{b.failed_pct}}%)</td><td>{{b.rejected}} ({{b.rejected_pct}}%)</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

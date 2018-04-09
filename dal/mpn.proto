@@ -1,0 +1,14 @@
+syntax = "proto3";
+package dal;
+
+import "extend.proto";
+
+option (fid) = 1;
+option (namespace) = "Mpn";
+
+message Mpn {
+}
+
+service MpnDal {
+
+}

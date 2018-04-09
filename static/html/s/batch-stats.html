@@ -1,0 +1,21 @@
+<h1 class="page-header">Batch · Stats</h1>
+<div ng-if="is_render_batch" ng-model="b">
+    <div>
+        <label>Total:{{b.cnt}}</label>
+    </div>
+    <hr style="height:1px;border:none;border-top:1px solid #555555;" />
+    <div>
+        <label>STA1:</label><br/>
+        <label>cur test pass:{{b.success}}</label><br/>
+        <label>cur test fail:{{b.rejected}}</label>
+    </div>
+    <hr style="height:1px;border:none;border-top:1px solid #555555;" />
+    <div>
+        <label>STA2:</label>
+        <label>cur test pass:{{print_pass}}</label>
+    </div>
+    <hr style="height:1px;border:none;border-top:1px solid #555555;" />
+</div>
+<div>
+    <button ng-click="update_batch()" type="submit"><span class="wait-and-ok"></span> Update </button>
+</div>
