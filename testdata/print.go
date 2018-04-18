@@ -5,7 +5,10 @@ import (
 	"espressif.com/chip/factory/dal"
 	"espressif.com/chip/factory/rpc"
 	"strings"
+	"sync"
 )
+
+var mutexPrint sync.Mutex
 
 func Print(req *rpc.Request, resp *rpc.Response) {
 	switch req.Method {
@@ -38,6 +41,13 @@ func printPost(req *rpc.Request, resp *rpc.Response) {
 	testdata.QueryTimes++
 	dryrun, _ := req.GetBool("dryrun", req.Get)
 	if !dryrun {
+		if testdata.PrintTimes == 0 {
+			mutexPrint.Lock()
+			defer mutexPrint.Unlock()
+			batch := dal.FindBatchBySid(req.Ctx, testdata.BatchSid)
+			batch.PrintNum = batch.PrintNum + 1
+			batch.Update(dal.BatchCol.PrintNum)
+		}
 		testdata.PrintTimes++
 	}
 	testdata.Update(dal.TestdataCol.QueryTimes, dal.TestdataCol.PrintTimes)

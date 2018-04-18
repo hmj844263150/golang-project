@@ -34,6 +34,7 @@ message Batch {
     int32  Failed = 22;
     int32  Rejected = 23;
     Timestamp Statsed = 24;
+    int32  PrintNum = 25;
 }
 
 message Batchs {

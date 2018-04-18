@@ -137,7 +137,7 @@ func SendToMail(to, subject, body string) error {
 		return err
 	}
 	defer c.Close()
-	c.Mail("factory@espressif.ccom")
+	c.Mail("factory@espressif.com")
 	c.Rcpt(to)
 	wc, err := c.Data()
 	if err != nil {

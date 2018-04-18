@@ -26,15 +26,27 @@ type TestData struct {
 	PoType       int    `json:"po_type"`
 }
 
+type BodyData struct {
+	DeviceType string `json:"device_type"`
+	BacthSid   string `json:"batch_sid"`
+}
+
+type GetData struct {
+	EspMac string `json:"esp_mac"`
+	Dryrun bool   `json:"dryrun"`
+}
+
 type HttpJson struct {
 	Path   string   `json:"path"`
 	Method string   `json:"method"`
 	Data   TestData `json:"testdata"`
+	Body   BodyData `json:"body"`
+	Get    GetData  `json:"get"`
 }
 
 //333334331210
 func main() {
-	esp_mac_1 := "33:33:35:33:14:33"
+	esp_mac_1 := "22:22:22:22:24:10"
 
 	channel1 := make(chan float64, 1)
 	go Client(esp_mac_1, channel1)
@@ -67,7 +79,7 @@ func Client(esp_mac_s string, channel chan float64) {
 
 	var sendData HttpJson
 	sendData = HttpJson{
-		Path:   "/testdata",
+		Path:   "/testdata/print",
 		Method: "POST",
 		Data: TestData{
 			DeviceType:   "ESP_WROOM02",
@@ -81,6 +93,14 @@ func Client(esp_mac_s string, channel chan float64) {
 			Efuse:        "1122334455667788",
 			ChkRepeatFlg: true,
 			PoType:       0,
+		},
+		Body: BodyData{
+			DeviceType: "ESP-WROOM-02E",
+			BacthSid:   "fd90f554b6",
+		},
+		Get: GetData{
+			EspMac: "333335331311",
+			Dryrun: false,
 		},
 	}
 
@@ -108,15 +128,8 @@ func Client(esp_mac_s string, channel chan float64) {
 		r.req = string(buf[0:c])
 
 		rst, err := r.Json2map()
-		//fmt.Println(rst["status"])
+		fmt.Println(rst["print_times"])
 
-		if rst["status"] == 500.0 {
-			fmt.Println(rst)
-			result[ri] = -1
-		} else {
-			result[ri] = rst["batch_index"].(float64)
-			// result[ri] = string(ri) + batch_index
-		}
 		ri += 1
 	}
 	fmt.Println(result)

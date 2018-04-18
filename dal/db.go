@@ -94,6 +94,21 @@ func Createdb() {
           esp_mac varchar(64) NOT NULL,
           PRIMARY KEY (id)
         );
+        CREATE TABLE user (
+          id int(11) NOT NULL AUTO_INCREMENT,
+          created datetime NOT NULL,
+          updated datetime NOT NULL,
+          visibly tinyint(1) NOT NULL,
+          account varchar(64) NOT NULL,
+          password varchar(64) NOT NULL,
+          name varchar(64) NOT NULL,
+          factory_sid varchar(64) NOT NULL,
+          group_id tinyint(4) NOT NULL,
+          email varchar(128) NOT NULL,
+          description varchar(256) NOT NULL,
+          PRIMARY KEY (id),
+          UNIQUE KEY account_UNIQUE (account)
+        );
     `)
 }
 

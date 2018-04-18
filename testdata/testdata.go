@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-var m sync.Mutex
+var mutexTestdata sync.Mutex
 
 func Testdata(req *rpc.Request, resp *rpc.Response) {
 	switch req.Method {
@@ -120,8 +120,8 @@ func testdataPost(req *rpc.Request, resp *rpc.Response) {
 		}
 	}
 
-	m.Lock()
-	defer m.Unlock()
+	mutexTestdata.Lock()
+	defer mutexTestdata.Unlock()
 	if testdata.BatchSid != "" {
 		batch = dal.FindBatchBySid(req.Ctx, testdata.BatchSid)
 		if batch == nil {

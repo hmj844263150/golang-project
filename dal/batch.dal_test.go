@@ -2,11 +2,11 @@ package dal
 
 import (
 	"encoding/json"
-	"espressif.com/chip/factory/db"
-	"log"
-	"strings"
 	"testing"
 	"time"
+	"log"
+	"strings"
+	"espressif.com/chip/factory/db"
 )
 
 func TestBatchSave(tt *testing.T) {
@@ -59,6 +59,7 @@ func randSetBatch(tt *testing.T, b *Batch) {
 	b.Failed = randInt32()
 	b.Rejected = randInt32()
 	b.Statsed = randTime()
+	b.PrintNum = randInt32()
 }
 
 func compareBatch(tt *testing.T, b *Batch) {
@@ -134,6 +135,9 @@ func compareBatch(tt *testing.T, b *Batch) {
 	}
 	if !almostSameTime(b.Statsed, b2.Statsed, 1) {
 		tt.Fatal("insert and find compare failed, field: Statsed")
+	}
+	if b.PrintNum != b2.PrintNum {
+		tt.Fatal("insert and find compare failed, field: PrintNum")
 	}
 }
 
@@ -473,6 +477,10 @@ func TestBatchMarshalJSON(tt *testing.T) {
 	if !compareBatchValue(jsonValue, b.Statsed) {
 		tt.Fatal("json Marshal and Unmarshal compare field (Statsed) failed")
 	}
+	jsonValue = mm["print_num"]
+	if !compareBatchValue(jsonValue, b.PrintNum) {
+		tt.Fatal("json Marshal and Unmarshal compare field (PrintNum) failed")
+	}
 }
 
 func TestBatchMarshalJSONComplex(tt *testing.T) {
@@ -540,6 +548,7 @@ func TestBatchUnmarshal(tt *testing.T) {
 	mm["failed"] = randInt32()
 	mm["rejected"] = randInt32()
 	mm["statsed"] = randTime()
+	mm["print_num"] = randInt32()
 	bs, err := json.Marshal(mm)
 	if err != nil {
 		tt.Fatal(err)
@@ -649,5 +658,9 @@ func TestBatchUnmarshal(tt *testing.T) {
 	jsonValue = mm["statsed"]
 	if !compareBatchValue(jsonValue, b.Statsed) {
 		tt.Fatal("json Marshal and Unmarshal compare field (Statsed) failed")
+	}
+	jsonValue = mm["print_num"]
+	if !compareBatchValue(jsonValue, b.PrintNum) {
+		tt.Fatal("json Marshal and Unmarshal compare field (PrintNum) failed")
 	}
 }

@@ -2,9 +2,9 @@ package dal
 
 import (
 	"bytes"
+	"fmt"
 	"context"
 	"espressif.com/chip/factory/db"
-	"fmt"
 	"strconv"
 	"strings"
 	"time"
@@ -12,12 +12,12 @@ import (
 
 var BatchTid = 1
 var _ db.Doer = (*Batch)(nil)
-var batchcols = []db.Col{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24}
-var batchfields = []string{"id", "created", "updated", "visibly", "sid", "factory_sid", "name", "desc", "cnt", "remain", "esp_mac_from", "esp_mac_to", "cus_mac_from", "cus_mac_to", "esp_mac_num_from", "esp_mac_num_to", "cus_mac_num_from", "cus_mac_num_to", "is_cus", "success", "right_first_time", "failed", "rejected", "statsed"}
+var batchcols = []db.Col{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25}
+var batchfields = []string{"id", "created", "updated", "visibly", "sid", "factory_sid", "name", "desc", "cnt", "remain", "esp_mac_from", "esp_mac_to", "cus_mac_from", "cus_mac_to", "esp_mac_num_from", "esp_mac_num_to", "cus_mac_num_from", "cus_mac_num_to", "is_cus", "success", "right_first_time", "failed", "rejected", "statsed", "print_num"}
 
 var BatchCol = struct {
-	Id, Created, Updated, Visibly, Sid, FactorySid, Name, Desc, Cnt, Remain, EspMacFrom, EspMacTo, CusMacFrom, CusMacTo, EspMacNumFrom, EspMacNumTo, CusMacNumFrom, CusMacNumTo, IsCus, Success, RightFirstTime, Failed, Rejected, Statsed, _ db.Col
-}{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 0}
+	Id, Created, Updated, Visibly, Sid, FactorySid, Name, Desc, Cnt, Remain, EspMacFrom, EspMacTo, CusMacFrom, CusMacTo, EspMacNumFrom, EspMacNumTo, CusMacNumFrom, CusMacNumTo, IsCus, Success, RightFirstTime, Failed, Rejected, Statsed, PrintNum, _ db.Col
+}{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 0}
 
 type Batch struct {
 	Id             int
@@ -44,6 +44,7 @@ type Batch struct {
 	Failed         int
 	Rejected       int
 	Statsed        time.Time
+	PrintNum       int
 
 	// ext, not persistent field
 	ext      *Ext
@@ -170,9 +171,9 @@ func (b *Batch) Save() error {
 	var id int64
 	var err error
 	if b.Id == 0 {
-		id, _, err = db.Open("Batch").Exec(batchSqls[0], b.Sid, b.FactorySid, b.Name, b.Desc, b.Cnt, b.Remain, b.EspMacFrom, b.EspMacTo, b.CusMacFrom, b.CusMacTo, b.EspMacNumFrom, b.EspMacNumTo, b.CusMacNumFrom, b.CusMacNumTo, b.IsCus, b.Success, b.RightFirstTime, b.Failed, b.Rejected, b.Statsed)
+		id, _, err = db.Open("Batch").Exec(batchSqls[0], b.Sid, b.FactorySid, b.Name, b.Desc, b.Cnt, b.Remain, b.EspMacFrom, b.EspMacTo, b.CusMacFrom, b.CusMacTo, b.EspMacNumFrom, b.EspMacNumTo, b.CusMacNumFrom, b.CusMacNumTo, b.IsCus, b.Success, b.RightFirstTime, b.Failed, b.Rejected, b.Statsed, b.PrintNum)
 	} else {
-		id, _, err = db.Open("Batch").Exec(batchSqls[1], b.Id, b.Sid, b.FactorySid, b.Name, b.Desc, b.Cnt, b.Remain, b.EspMacFrom, b.EspMacTo, b.CusMacFrom, b.CusMacTo, b.EspMacNumFrom, b.EspMacNumTo, b.CusMacNumFrom, b.CusMacNumTo, b.IsCus, b.Success, b.RightFirstTime, b.Failed, b.Rejected, b.Statsed)
+		id, _, err = db.Open("Batch").Exec(batchSqls[1], b.Id, b.Sid, b.FactorySid, b.Name, b.Desc, b.Cnt, b.Remain, b.EspMacFrom, b.EspMacTo, b.CusMacFrom, b.CusMacTo, b.EspMacNumFrom, b.EspMacNumTo, b.CusMacNumFrom, b.CusMacNumTo, b.IsCus, b.Success, b.RightFirstTime, b.Failed, b.Rejected, b.Statsed, b.PrintNum)
 	}
 	if err != nil {
 		return err
@@ -187,7 +188,7 @@ func (b *Batch) Update(cs ...db.Col) error {
 	}
 	b.Updated = time.Now()
 	if len(cs) == 0 {
-		_, _, err := db.Open("Batch").Exec(batchSqls[2], b.Visibly, b.Sid, b.FactorySid, b.Name, b.Desc, b.Cnt, b.Remain, b.EspMacFrom, b.EspMacTo, b.CusMacFrom, b.CusMacTo, b.EspMacNumFrom, b.EspMacNumTo, b.CusMacNumFrom, b.CusMacNumTo, b.IsCus, b.Success, b.RightFirstTime, b.Failed, b.Rejected, b.Statsed, b.Id)
+		_, _, err := db.Open("Batch").Exec(batchSqls[2], b.Visibly, b.Sid, b.FactorySid, b.Name, b.Desc, b.Cnt, b.Remain, b.EspMacFrom, b.EspMacTo, b.CusMacFrom, b.CusMacTo, b.EspMacNumFrom, b.EspMacNumTo, b.CusMacNumFrom, b.CusMacNumTo, b.IsCus, b.Success, b.RightFirstTime, b.Failed, b.Rejected, b.Statsed, b.PrintNum, b.Id)
 		return err
 	}
 	cols, args, err := colsAndArgsBatch(b, cs...)
@@ -386,6 +387,12 @@ func (b *Batch) AsMap(isColumnName bool, cs ...db.Col) map[string]interface{} {
 			} else {
 				mm["Statsed"] = b.Statsed
 			}
+		case BatchCol.PrintNum:
+			if isColumnName {
+				mm["print_num"] = b.PrintNum
+			} else {
+				mm["PrintNum"] = b.PrintNum
+			}
 		default:
 			logError(fmt.Sprintf("dal.Batch Error: unknow column num %d in talbe batch", cc))
 		}
@@ -486,6 +493,8 @@ func (b *Batch) MarshalJSON() ([]byte, error) {
 		b.Statsed = b.Statsed.In(loc)
 		buf.WriteString(`"` + b.Statsed.Format(DefaultTimeFormat) + `"`)
 	}
+	buf.WriteString(`, "print_num":`)
+	buf.WriteString(strconv.FormatInt(int64(b.PrintNum), 10))
 	buf.WriteString("}")
 	return buf.Bytes(), nil
 }
@@ -658,6 +667,11 @@ func (b *Batch) marshalJSONComplex() ([]byte, error) {
 			b.Statsed = b.Statsed.In(loc)
 			buf.WriteString(`"` + b.Statsed.Format(DefaultTimeFormat) + `"`)
 		}
+	}
+	isRender = isRenderField(BatchCol.PrintNum, "print_num", includes, excludes, paddings)
+	if isRender {
+		buf.WriteString(`, "print_num":`)
+		buf.WriteString(strconv.FormatInt(int64(b.PrintNum), 10))
 	}
 	if paddings != nil {
 		var kk string
@@ -863,6 +877,13 @@ func (b *Batch) UnmarshalMap(ctx context.Context, vi interface{}, cols ...db.Col
 			}
 			b.Statsed, err = Time(vvv, loc)
 			updatedCols = append(updatedCols, col)
+		case BatchCol.PrintNum:
+			vvv, ok := vv["print_num"]
+			if !ok {
+				continue
+			}
+			b.PrintNum, err = Int(vvv)
+			updatedCols = append(updatedCols, col)
 		}
 		if err != nil {
 			return nil, err
@@ -904,7 +925,7 @@ func UnmarshalBatchs(ctx context.Context, vi interface{}, cols ...db.Col) ([]*Ba
 func newBatchDest(cols ...string) (db.Doer, []interface{}, error) {
 	b := &Batch{}
 	if cols == nil || len(cols) == 0 {
-		return b, []interface{}{&b.Id, &b.Created, &b.Updated, &b.Visibly, &b.Sid, &b.FactorySid, &b.Name, &b.Desc, &b.Cnt, &b.Remain, &b.EspMacFrom, &b.EspMacTo, &b.CusMacFrom, &b.CusMacTo, &b.EspMacNumFrom, &b.EspMacNumTo, &b.CusMacNumFrom, &b.CusMacNumTo, &b.IsCus, &b.Success, &b.RightFirstTime, &b.Failed, &b.Rejected, &b.Statsed}, nil
+		return b, []interface{}{&b.Id, &b.Created, &b.Updated, &b.Visibly, &b.Sid, &b.FactorySid, &b.Name, &b.Desc, &b.Cnt, &b.Remain, &b.EspMacFrom, &b.EspMacTo, &b.CusMacFrom, &b.CusMacTo, &b.EspMacNumFrom, &b.EspMacNumTo, &b.CusMacNumFrom, &b.CusMacNumTo, &b.IsCus, &b.Success, &b.RightFirstTime, &b.Failed, &b.Rejected, &b.Statsed, &b.PrintNum}, nil
 	}
 	dest := make([]interface{}, len(cols))
 	for ii, col := range cols {
@@ -957,6 +978,8 @@ func newBatchDest(cols ...string) (db.Doer, []interface{}, error) {
 			dest[ii] = &b.Rejected
 		case "statsed":
 			dest[ii] = &b.Statsed
+		case "print_num":
+			dest[ii] = &b.PrintNum
 		default:
 			return nil, nil, logError("dal.Batch Error: unknow column " + col + " in talbe batch")
 		}
@@ -1045,6 +1068,9 @@ func colsAndArgsBatch(b *Batch, cs ...db.Col) ([]string, []interface{}, error) {
 		case BatchCol.Statsed:
 			cols[ii] = "`statsed` = ?"
 			args[ii] = b.Statsed
+		case BatchCol.PrintNum:
+			cols[ii] = "`print_num` = ?"
+			args[ii] = b.PrintNum
 		default:
 			return nil, nil, logError(fmt.Sprintf("dal.Batch Error: unknow column num %d in talbe batch", cc))
 		}
@@ -1082,21 +1108,22 @@ var batchSqls = []string{
 		  `failed` int(11) NOT NULL,
 		  `rejected` int(11) NOT NULL,
 		  `statsed` datetime NOT NULL,
+		  `print_num` int(11) NOT NULL,
 		  PRIMARY KEY (`id`)
 		) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 	*/
-	/*0*/ "insert into batch(`created`, `updated`, `visibly`, `sid`, `factory_sid`, `name`, `desc`, `cnt`, `remain`, `esp_mac_from`, `esp_mac_to`, `cus_mac_from`, `cus_mac_to`, `esp_mac_num_from`, `esp_mac_num_to`, `cus_mac_num_from`, `cus_mac_num_to`, `is_cus`, `success`, `right_first_time`, `failed`, `rejected`, `statsed`) values(now(), now(), 1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-	/*1*/ "insert into batch(`id`, `created`, `updated`, `visibly`, `sid`, `factory_sid`, `name`, `desc`, `cnt`, `remain`, `esp_mac_from`, `esp_mac_to`, `cus_mac_from`, `cus_mac_to`, `esp_mac_num_from`, `esp_mac_num_to`, `cus_mac_num_from`, `cus_mac_num_to`, `is_cus`, `success`, `right_first_time`, `failed`, `rejected`, `statsed`) values(?, now(), now(), 1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-	/*2*/ "update batch set updated = now(), `visibly` = ?, `sid` = ?, `factory_sid` = ?, `name` = ?, `desc` = ?, `cnt` = ?, `remain` = ?, `esp_mac_from` = ?, `esp_mac_to` = ?, `cus_mac_from` = ?, `cus_mac_to` = ?, `esp_mac_num_from` = ?, `esp_mac_num_to` = ?, `cus_mac_num_from` = ?, `cus_mac_num_to` = ?, `is_cus` = ?, `success` = ?, `right_first_time` = ?, `failed` = ?, `rejected` = ?, `statsed` = ? where id = ?",
+	/*0*/ "insert into batch(`created`, `updated`, `visibly`, `sid`, `factory_sid`, `name`, `desc`, `cnt`, `remain`, `esp_mac_from`, `esp_mac_to`, `cus_mac_from`, `cus_mac_to`, `esp_mac_num_from`, `esp_mac_num_to`, `cus_mac_num_from`, `cus_mac_num_to`, `is_cus`, `success`, `right_first_time`, `failed`, `rejected`, `statsed`, `print_num`) values(now(), now(), 1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+	/*1*/ "insert into batch(`id`, `created`, `updated`, `visibly`, `sid`, `factory_sid`, `name`, `desc`, `cnt`, `remain`, `esp_mac_from`, `esp_mac_to`, `cus_mac_from`, `cus_mac_to`, `esp_mac_num_from`, `esp_mac_num_to`, `cus_mac_num_from`, `cus_mac_num_to`, `is_cus`, `success`, `right_first_time`, `failed`, `rejected`, `statsed`, `print_num`) values(?, now(), now(), 1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+	/*2*/ "update batch set updated = now(), `visibly` = ?, `sid` = ?, `factory_sid` = ?, `name` = ?, `desc` = ?, `cnt` = ?, `remain` = ?, `esp_mac_from` = ?, `esp_mac_to` = ?, `cus_mac_from` = ?, `cus_mac_to` = ?, `esp_mac_num_from` = ?, `esp_mac_num_to` = ?, `cus_mac_num_from` = ?, `cus_mac_num_to` = ?, `is_cus` = ?, `success` = ?, `right_first_time` = ?, `failed` = ?, `rejected` = ?, `statsed` = ?, `print_num` = ? where id = ?",
 	/*3*/ "update batch set updated = now(), %s where id = ?",
 	/*4*/ "update batch set visibly = 0, updated = now() where id = ?",
 	/*5*/ "delete from batch where id = ?",
-	/*6*/ "select `id`, `created`, `updated`, `visibly`, `sid`, `factory_sid`, `name`, `desc`, `cnt`, `remain`, `esp_mac_from`, `esp_mac_to`, `cus_mac_from`, `cus_mac_to`, `esp_mac_num_from`, `esp_mac_num_to`, `cus_mac_num_from`, `cus_mac_num_to`, `is_cus`, `success`, `right_first_time`, `failed`, `rejected`, `statsed` from batch where id = ? and visibly = 1",
-	/*7*/ "select `id`, `created`, `updated`, `visibly`, `sid`, `factory_sid`, `name`, `desc`, `cnt`, `remain`, `esp_mac_from`, `esp_mac_to`, `cus_mac_from`, `cus_mac_to`, `esp_mac_num_from`, `esp_mac_num_to`, `cus_mac_num_from`, `cus_mac_num_to`, `is_cus`, `success`, `right_first_time`, `failed`, `rejected`, `statsed` from batch where id in (%s) and visibly = 1",
+	/*6*/ "select `id`, `created`, `updated`, `visibly`, `sid`, `factory_sid`, `name`, `desc`, `cnt`, `remain`, `esp_mac_from`, `esp_mac_to`, `cus_mac_from`, `cus_mac_to`, `esp_mac_num_from`, `esp_mac_num_to`, `cus_mac_num_from`, `cus_mac_num_to`, `is_cus`, `success`, `right_first_time`, `failed`, `rejected`, `statsed`, `print_num` from batch where id = ? and visibly = 1",
+	/*7*/ "select `id`, `created`, `updated`, `visibly`, `sid`, `factory_sid`, `name`, `desc`, `cnt`, `remain`, `esp_mac_from`, `esp_mac_to`, `cus_mac_from`, `cus_mac_to`, `esp_mac_num_from`, `esp_mac_num_to`, `cus_mac_num_from`, `cus_mac_num_to`, `is_cus`, `success`, `right_first_time`, `failed`, `rejected`, `statsed`, `print_num` from batch where id in (%s) and visibly = 1",
 
-	/*8*/ "select `id`, `created`, `updated`, `visibly`, `sid`, `factory_sid`, `name`, `desc`, `cnt`, `remain`, `esp_mac_from`, `esp_mac_to`, `cus_mac_from`, `cus_mac_to`, `esp_mac_num_from`, `esp_mac_num_to`, `cus_mac_num_from`, `cus_mac_num_to`, `is_cus`, `success`, `right_first_time`, `failed`, `rejected`, `statsed` from batch where visibly = 1 order by id desc limit ?, ?",
-	/*9*/ "select `id`, `created`, `updated`, `visibly`, `sid`, `factory_sid`, `name`, `desc`, `cnt`, `remain`, `esp_mac_from`, `esp_mac_to`, `cus_mac_from`, `cus_mac_to`, `esp_mac_num_from`, `esp_mac_num_to`, `cus_mac_num_from`, `cus_mac_num_to`, `is_cus`, `success`, `right_first_time`, `failed`, `rejected`, `statsed` from batch where visibly = 1 and sid = ? limit 0, 1",
-	/*10*/ "select `id`, `created`, `updated`, `visibly`, `sid`, `factory_sid`, `name`, `desc`, `cnt`, `remain`, `esp_mac_from`, `esp_mac_to`, `cus_mac_from`, `cus_mac_to`, `esp_mac_num_from`, `esp_mac_num_to`, `cus_mac_num_from`, `cus_mac_num_to`, `is_cus`, `success`, `right_first_time`, `failed`, `rejected`, `statsed` from batch where visibly = 1 and sid = ? and cus_mac_num_from >= ? and ? <= cus_mac_num_to limit 0, 1",
-	/*11*/ "select `id`, `created`, `updated`, `visibly`, `sid`, `factory_sid`, `name`, `desc`, `cnt`, `remain`, `esp_mac_from`, `esp_mac_to`, `cus_mac_from`, `cus_mac_to`, `esp_mac_num_from`, `esp_mac_num_to`, `cus_mac_num_from`, `cus_mac_num_to`, `is_cus`, `success`, `right_first_time`, `failed`, `rejected`, `statsed` from batch where visibly = 1 and factory_sid = ? order by id desc limit ?, ?",
+	/*8*/ "select `id`, `created`, `updated`, `visibly`, `sid`, `factory_sid`, `name`, `desc`, `cnt`, `remain`, `esp_mac_from`, `esp_mac_to`, `cus_mac_from`, `cus_mac_to`, `esp_mac_num_from`, `esp_mac_num_to`, `cus_mac_num_from`, `cus_mac_num_to`, `is_cus`, `success`, `right_first_time`, `failed`, `rejected`, `statsed`, `print_num` from batch where visibly = 1 order by id desc limit ?, ?",
+	/*9*/ "select `id`, `created`, `updated`, `visibly`, `sid`, `factory_sid`, `name`, `desc`, `cnt`, `remain`, `esp_mac_from`, `esp_mac_to`, `cus_mac_from`, `cus_mac_to`, `esp_mac_num_from`, `esp_mac_num_to`, `cus_mac_num_from`, `cus_mac_num_to`, `is_cus`, `success`, `right_first_time`, `failed`, `rejected`, `statsed`, `print_num` from batch where visibly = 1 and sid = ? limit 0, 1",
+	/*10*/ "select `id`, `created`, `updated`, `visibly`, `sid`, `factory_sid`, `name`, `desc`, `cnt`, `remain`, `esp_mac_from`, `esp_mac_to`, `cus_mac_from`, `cus_mac_to`, `esp_mac_num_from`, `esp_mac_num_to`, `cus_mac_num_from`, `cus_mac_num_to`, `is_cus`, `success`, `right_first_time`, `failed`, `rejected`, `statsed`, `print_num` from batch where visibly = 1 and sid = ? and cus_mac_num_from >= ? and ? <= cus_mac_num_to limit 0, 1",
+	/*11*/ "select `id`, `created`, `updated`, `visibly`, `sid`, `factory_sid`, `name`, `desc`, `cnt`, `remain`, `esp_mac_from`, `esp_mac_to`, `cus_mac_from`, `cus_mac_to`, `esp_mac_num_from`, `esp_mac_num_to`, `cus_mac_num_from`, `cus_mac_num_to`, `is_cus`, `success`, `right_first_time`, `failed`, `rejected`, `statsed`, `print_num` from batch where visibly = 1 and factory_sid = ? order by id desc limit ?, ?",
 }

@@ -26,6 +26,7 @@
     <div id="header-wrapper" ng-controller="auth">
       <div id="header" class="container">
         <ul ng-if="authorized == true" class="nav nav-pills pull-right">
+          <li><a href="#/user">User</a></li>
           <li><a href="#/batch">Batch</a></li>
           <li><a href="#/testdata">Testdata</a></li>
           <li><a href="#/stats">Stats</a></li>
@@ -210,7 +211,7 @@ iotControllers.controller('login',
             now = new Date();
             expires = new Date(now.getFullYear(), now.getMonth(), now.getDate()+30);
             $cookies.put('Token', data.token, {'path': '/', 'expires': expires});
-            window.location.href = location.origin + '/f/#/factory';
+            window.location.href = location.origin + '/f/#/batch';
             window.location.reload();
             return
         });
@@ -319,9 +320,9 @@ iotControllers.controller('batchStats',
         $http.get('/batch/stats?batch_detail='+$scope.batch_sid, {headers: {'token': $cookies.get('Token')}}).success(function(dataO) {
             var batch = dataO.batch;
             var sum = batch.success + batch.rejected;
-            $scope.print_pass = dataO.print_pass;
+            $scope.print_pass = batch.print_num;
             batch.success_pct = parseInt(batch.success*10000 / sum) / 100;
-            batch.right_first_time_pct = parseInt(batch.right_first_time*10000 / batch.cnt) / 100;
+            //batch.right_first_time_pct = parseInt(batch.right_first_time*10000 / batch.cnt) / 100;
             batch.failed_pct = parseInt(batch.failed*10000 / sum) / 100;
             batch.rejected_pct = parseInt(batch.rejected*10000 / sum) / 100;
             $scope.b = batch;
