@@ -45,7 +45,7 @@ func statsBatchs(req *rpc.Request, resp *rpc.Response, str string) {
 		if batch.Success == batch.Cnt {
 			continue
 		}
-		testdata := dal.FindTestdataByBatchSidNewst(req.Ctx, batch.Sid)
+		testdata := dal.FindTestdataByBatchSidNewst(req.Ctx, batch.Sid, batch.Sid)
 		if testdata == nil {
 			continue
 		}
@@ -79,7 +79,7 @@ func statsBatchDetail(req *rpc.Request, resp *rpc.Response, batchSid string) {
 	}
 	//resp.Body["print_pass"] = dal.CountTestdataByBatchPrintPass(req.Ctx, batch.Sid)
 	if batch.Success != batch.Cnt {
-		testdata := dal.FindTestdataByBatchSidNewst(req.Ctx, batch.Sid)
+		testdata := dal.FindTestdataByBatchSidNewst(req.Ctx, batch.Sid, batch.Sid)
 		if testdata != nil && batch.Statsed != testdata.Created {
 			batch.Success = dal.CountTestdataByBatchSuccess(req.Ctx, batch.Sid)
 			//batch.RightFirstTime = dal.CountTestdataByBatchRightFirstTime(req.Ctx, batch.Sid, batch.Sid)

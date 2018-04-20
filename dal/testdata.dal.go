@@ -387,8 +387,8 @@ func ListTestdataByFactoryEspMac(ctx context.Context, factorySid string, espMac 
 	return testdatas
 }
 
-func FindTestdataByBatchSidNewst(ctx context.Context, batchSid string) *Testdata {
-	dos, err := db.Open("Testdata").Query(newTestdataDest, true, testdataSqls[33], batchSid)
+func FindTestdataByBatchSidNewst(ctx context.Context, batchSid string, batchSidRepeat string) *Testdata {
+	dos, err := db.Open("Testdata").Query(newTestdataDest, true, testdataSqls[33], batchSid, batchSidRepeat)
 	if err != nil {
 		return nil
 	}

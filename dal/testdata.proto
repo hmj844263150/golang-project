@@ -165,7 +165,7 @@ service TestdataDal {
     }
     rpc FindTestdataByBatchSidNewst(Bytes) returns (Testdata) {
         option (mid) = 26;
-        option (args) = "batchSid string";
+        option (args) = "batchSid string, batchSidRepeat string";
         option (sql) = "select * from testdata where visibly = 1 and batch_sid = ? and id=(select max(id) from testdata where visibly=1 and batch_sid= ? )";
     }
 }
