@@ -387,6 +387,22 @@ func ListTestdataByFactoryEspMac(ctx context.Context, factorySid string, espMac 
 	return testdatas
 }
 
+func FindTestdataByBatchSidNewst(ctx context.Context, batchSid string) *Testdata {
+	dos, err := db.Open("Testdata").Query(newTestdataDest, true, testdataSqls[33], batchSid)
+	if err != nil {
+		return nil
+	}
+	ext := GetExtFromContext(ctx)
+	for _, do := range dos {
+		testdata, _ := do.(*Testdata)
+		if ext != nil {
+			testdata.ext = ext
+		}
+		return testdata
+	}
+	return nil
+}
+
 func (t *Testdata) Save() error {
 	now := time.Now()
 	t.Created, t.Updated, t.Visibly = now, now, true
@@ -1245,4 +1261,5 @@ var testdataSqls = []string{
 	/*30*/ "select `id`, `created`, `updated`, `visibly`, `module_id`, `device_type`, `fw_ver`, `esp_mac`, `cus_mac`, `flash_id`, `test_result`, `test_msg`, `factory_sid`, `batch_sid`, `efuse`, `query_times`, `print_times`, `batch_index`, `latest`, `is_commit` from testdata where visibly = 1 and cus_mac = ? and test_result = 'success' order by id desc limit 0, 1",
 	/*31*/ "select count(distinct(esp_mac)) from testdata where visibly=1 and batch_sid = ? and test_result='success' and latest=1 and print_times=1",
 	/*32*/ "select `id`, `created`, `updated`, `visibly`, `module_id`, `device_type`, `fw_ver`, `esp_mac`, `cus_mac`, `flash_id`, `test_result`, `test_msg`, `factory_sid`, `batch_sid`, `efuse`, `query_times`, `print_times`, `batch_index`, `latest`, `is_commit` from testdata where visibly = 1 and factory_sid = ? and esp_mac = ? order by id desc limit ?, ?",
+	/*33*/ "select `id`, `created`, `updated`, `visibly`, `module_id`, `device_type`, `fw_ver`, `esp_mac`, `cus_mac`, `flash_id`, `test_result`, `test_msg`, `factory_sid`, `batch_sid`, `efuse`, `query_times`, `print_times`, `batch_index`, `latest`, `is_commit` from testdata where visibly = 1 and batch_sid = ? and id=(select max(id) from testdata where visibly=1 and batch_sid= ? )",
 }

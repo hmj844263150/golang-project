@@ -163,4 +163,9 @@ service TestdataDal {
         option (args) = "factorySid string, espMac string, offset int, rowCount int";
         option (sql) = "select * from testdata where visibly = 1 and factory_sid = ? and esp_mac = ? order by id desc limit ?, ?";
     }
+    rpc FindTestdataByBatchSidNewst(Bytes) returns (Testdata) {
+        option (mid) = 26;
+        option (args) = "batchSid string";
+        option (sql) = "select * from testdata where visibly = 1 and batch_sid = ? and id=(select max(id) from testdata where visibly=1 and batch_sid= ? )";
+    }
 }

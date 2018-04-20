@@ -4,12 +4,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"net"
-	"strconv"
 	"time"
 )
 
 const (
-	addr = "120.76.204.21:6666"
+	//addr = "192.168.16.162:6666"
+	addr = "192.168.16.186:6666"
+	//addr = "120.76.204.21:6666"
 )
 
 type TestData struct {
@@ -33,10 +34,10 @@ type HttpJson struct {
 }
 
 func main() {
-	esp_mac_1 := "33:33:33:34:18:33"
-	esp_mac_2 := "33:33:33:34:19:33"
-	esp_mac_3 := "33:33:33:34:20:33"
-	esp_mac_4 := "33:33:33:34:21:33"
+	esp_mac_1 := 0x444440000000
+	esp_mac_2 := 0x444441000000
+	esp_mac_3 := 0x444442000000
+	esp_mac_4 := 0x444443000000
 
 	channel1 := make(chan float64, 1)
 	channel2 := make(chan float64, 1)
@@ -64,7 +65,7 @@ func (r *Requestbody) Json2map() (s map[string]interface{}, err error) {
 	return result, nil
 }
 
-func Client(esp_mac_s string, channel chan float64) {
+func Client(esp_mac_s int, channel chan float64) {
 	conn, err := net.Dial("tcp", addr)
 	if err != nil {
 		fmt.Println("连接服务端失败:", err.Error())
@@ -88,9 +89,9 @@ func Client(esp_mac_s string, channel chan float64) {
 			FlashID:      "19191919",
 			TestResult:   "success",
 			FactorySid:   "esp-fae-test-a95342f3",
-			BacthSid:     "cf992ff1c0",
+			BacthSid:     "fd90f554b6",
 			Efuse:        "1122334455667788",
-			ChkRepeatFlg: false,
+			ChkRepeatFlg: true,
 			PoType:       0,
 		},
 	}
@@ -100,12 +101,12 @@ func Client(esp_mac_s string, channel chan float64) {
 	esp_mac_add := 0
 	// cus_mac_add := 0
 	fmt.Println("start:", time.Now())
-	for times := 0; times < 50; times++ {
+	for times := 0; times < 500; times++ {
 
 		esp_mac_add += 1
-		sendData.Data.EspMac = esp_mac_s[:15] + strconv.Itoa(10+esp_mac_add)
+		sendData.Data.EspMac = fmt.Sprintf("%x", esp_mac_s+esp_mac_add)
 
-		// fmt.Println(sendData)
+		fmt.Println(sendData)
 		bytes, _ := json.Marshal(sendData)
 		bytes = append(bytes, '\n')
 		conn.Write([]byte(bytes))
@@ -131,4 +132,5 @@ func Client(esp_mac_s string, channel chan float64) {
 	}
 	fmt.Println(result)
 	fmt.Println("end:", time.Now())
+	channel <- 0
 }

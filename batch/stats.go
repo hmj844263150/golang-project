@@ -45,18 +45,18 @@ func statsBatchs(req *rpc.Request, resp *rpc.Response, str string) {
 		if batch.Success == batch.Cnt {
 			continue
 		}
-		testdatas := dal.ListTestdataByBatch(req.Ctx, batch.Sid, 0, 1)
-		if len(testdatas) == 0 {
+		testdata := dal.FindTestdataByBatchSidNewst(req.Ctx, batch.Sid)
+		if testdata == nil {
 			continue
 		}
-		if batch.Statsed == testdatas[0].Created {
+		if batch.Statsed == testdata.Created {
 			continue
 		}
 		batch.Success = dal.CountTestdataByBatchSuccess(req.Ctx, batch.Sid)
 		batch.RightFirstTime = dal.CountTestdataByBatchRightFirstTime(req.Ctx, batch.Sid, batch.Sid)
 		batch.Failed = dal.CountTestdataByBatchFailed(req.Ctx, batch.Sid)
 		batch.Rejected = dal.CountTestdataByBatchRejected(req.Ctx, batch.Sid)
-		batch.Statsed = testdatas[0].Created
+		batch.Statsed = testdata.Created
 		batch.Update(dal.BatchCol.Success, dal.BatchCol.RightFirstTime, dal.BatchCol.Failed, dal.BatchCol.Rejected, dal.BatchCol.Statsed)
 	}
 	resp.Body["batchs"] = batchs
@@ -79,8 +79,8 @@ func statsBatchDetail(req *rpc.Request, resp *rpc.Response, batchSid string) {
 	}
 	//resp.Body["print_pass"] = dal.CountTestdataByBatchPrintPass(req.Ctx, batch.Sid)
 	if batch.Success != batch.Cnt {
-		testdatas := dal.ListTestdataByBatch(req.Ctx, batch.Sid, 0, 1)
-		if len(testdatas) > 0 && batch.Statsed != testdatas[0].Created {
+		testdata := dal.FindTestdataByBatchSidNewst(req.Ctx, batch.Sid)
+		if testdata != nil && batch.Statsed != testdata.Created {
 			batch.Success = dal.CountTestdataByBatchSuccess(req.Ctx, batch.Sid)
 			//batch.RightFirstTime = dal.CountTestdataByBatchRightFirstTime(req.Ctx, batch.Sid, batch.Sid)
 			batch.Failed = dal.CountTestdataByBatchFailed(req.Ctx, batch.Sid)
@@ -88,6 +88,5 @@ func statsBatchDetail(req *rpc.Request, resp *rpc.Response, batchSid string) {
 			batch.Update(dal.BatchCol.Success, dal.BatchCol.RightFirstTime, dal.BatchCol.Failed, dal.BatchCol.Rejected, dal.BatchCol.Statsed)
 		}
 	}
-
 	resp.Body["batch"] = batch
 }
